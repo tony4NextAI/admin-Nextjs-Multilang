@@ -1,5 +1,8 @@
 # Admin Dashboard
 
+> **Author**: tai.ngotan  
+> **Built with**: Cursor AI as coding buddy 🤖
+
 A modern admin dashboard built with Next.js 15, featuring multi-language support (English and Vietnamese) and authentication.
 
 ## Features
@@ -134,6 +137,12 @@ npm run build
 # Start production server
 npm start
 ```
+
+## Author & Credits
+
+**Author**: tai.ngotan
+
+This project was developed with the assistance of **Cursor AI** as a coding buddy, providing intelligent code completion, suggestions, and pair programming support throughout the development process.
 
 ## License
 
