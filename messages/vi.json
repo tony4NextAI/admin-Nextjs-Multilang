@@ -1,0 +1,43 @@
+{
+  "login": {
+    "title": "Đăng nhập Admin",
+    "username": "Tên đăng nhập",
+    "password": "Mật khẩu",
+    "submit": "Đăng nhập",
+    "error": "Tên đăng nhập hoặc mật khẩu không đúng"
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển Admin",
+    "welcome": "Chào mừng đến với Bảng điều khiển Admin"
+  },
+  "navigation": {
+    "users": "Người dùng",
+    "transactions": "Giao dịch",
+    "livestream": "Livestream",
+    "logout": "Đăng xuất"
+  },
+  "users": {
+    "title": "Quản lý Người dùng",
+    "account": "Tài khoản",
+    "bank": "Ngân hàng",
+    "amount": "Số tiền",
+    "created": "Ngày tạo",
+    "viewHistory": "Xem lịch sử"
+  },
+  "transactions": {
+    "title": "Quản lý Giao dịch",
+    "id": "ID",
+    "message": "Tin nhắn",
+    "amount": "Số tiền",
+    "status": "Trạng thái",
+    "type": "Loại",
+    "note": "Ghi chú"
+  },
+  "livestream": {
+    "title": "Quản lý Livestream"
+  },
+  "userHistory": {
+    "title": "Lịch sử Người dùng",
+    "backToUsers": "Quay lại Người dùng"
+  }
+} 

@@ -1,0 +1,43 @@
+{
+  "login": {
+    "title": "Admin Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Login",
+    "error": "Invalid username or password"
+  },
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "welcome": "Welcome to Admin Dashboard"
+  },
+  "navigation": {
+    "users": "Users",
+    "transactions": "Transactions",
+    "livestream": "Livestream",
+    "logout": "Logout"
+  },
+  "users": {
+    "title": "User Management",
+    "account": "Account",
+    "bank": "Bank",
+    "amount": "Amount",
+    "created": "Created Date",
+    "viewHistory": "View History"
+  },
+  "transactions": {
+    "title": "Transaction Management",
+    "id": "ID",
+    "message": "Message",
+    "amount": "Amount",
+    "status": "Status",
+    "type": "Type",
+    "note": "Note"
+  },
+  "livestream": {
+    "title": "Livestream Management"
+  },
+  "userHistory": {
+    "title": "User History",
+    "backToUsers": "Back to Users"
+  }
+} 
