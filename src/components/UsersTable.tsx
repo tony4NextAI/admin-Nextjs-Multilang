@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import { DataTable } from '@/components/ui';
+import { useUsers } from '@/lib/hooks/useUsers';
 
 interface User extends Record<string, unknown> {
   account: number;
@@ -12,7 +13,6 @@ interface User extends Record<string, unknown> {
 }
 
 interface UsersTableProps {
-  users: User[];
   locale: string;
 }
 
@@ -35,9 +35,15 @@ function getTranslations(locale: string = 'en') {
   return translations[locale as keyof typeof translations] || translations.en;
 }
 
-export default function UsersTable({ users, locale }: UsersTableProps) {
+export default function UsersTable({  locale }: Readonly<UsersTableProps>) {
   const t = getTranslations(locale);
   const router = useRouter();
+
+  const users = useUsers();
+
+  console.log('====================================');
+  console.log({users});
+  console.log('====================================');
 
   const handleRowClick = (user: User) => {
     router.push(`/${locale}/dashboard/user-history/${user.account}`);
@@ -87,7 +93,7 @@ export default function UsersTable({ users, locale }: UsersTableProps) {
 
   return (
     <DataTable
-      data={users}
+      data={[]}
       columns={columns}
       onRowClick={handleRowClick}
       itemsPerPage={10}

@@ -2,6 +2,8 @@ export const API_BASE_URL = 'http://65.109.108.95:3001/api/';
 
 export const ApiPath = {
   adminLogin: 'admin/login',
+  userList: 'admin/user/list',
+  
   // Add more endpoints here as needed
 };
 
@@ -10,6 +12,7 @@ type RequestOptions = {
   headers?: Record<string, string>;
   body?: unknown;
   params?: Record<string, string | number>;
+  token?: string;
 };
 
 export async function apiFetch<T>(
@@ -29,9 +32,10 @@ export async function apiFetch<T>(
   }
 
   const fetchOptions: RequestInit = {
-    method: options.method || 'GET',
+    method: options.method ?? 'GET',
     headers: {
       'Content-Type': 'application/json',
+      ...(options.token ? { 'Authorization': `Bearer ${options.token}` } : {}),
       ...(options.headers || {}),
     },
     ...(options.body && typeof options.body === 'object' ? { body: JSON.stringify(options.body) } : {}),
@@ -41,7 +45,7 @@ export async function apiFetch<T>(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'API Error');
+    throw new Error(error.message ?? `HTTP ${response.status}: ${response.statusText}`);
   }
 
   return response.json();
