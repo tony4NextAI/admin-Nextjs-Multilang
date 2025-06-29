@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
-export default function LoginForm({ locale }: { locale: string }) {
+export default function LoginForm({ locale }: Readonly<{ locale: string }>) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,7 +22,7 @@ export default function LoginForm({ locale }: { locale: string }) {
         password,
         redirect: false,
       });
-      if (result && result.ok) {
+      if (result?.ok) {
         router.push(`/${locale}/dashboard`);
       } else {
         setError('Invalid username or password');

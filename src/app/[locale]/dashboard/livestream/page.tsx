@@ -1,11 +1,13 @@
+import QueryExample from '@/components/QueryExample';
+
 // Simple translation function
 function getTranslations(locale: string = 'en') {
   const translations = {
     en: {
-      title: 'Livestream'
+      title: 'Livestream & React Query Demo'
     },
     vi: {
-      title: 'Phát trực tiếp'
+      title: 'Phát trực tiếp & Demo React Query'
     }
   };
   return translations[locale as keyof typeof translations] || translations.en;
@@ -18,6 +20,13 @@ export default async function LivestreamPage({ params }: { params: Promise<{ loc
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.title}</h1>
+      
+      {/* React Query Example */}
+      <div className="mb-8">
+        <QueryExample />
+      </div>
+
+      {/* Original Livestream Placeholder */}
       <div className="bg-white shadow-sm rounded-lg p-6">
         <div className="text-center py-12">
           <div className="mx-auto h-12 w-12 text-gray-400">
