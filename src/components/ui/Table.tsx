@@ -97,7 +97,7 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
   className = '' 
 }) => {
   return (
-    <thead className={cn('bg-gray-50', className)}>
+    <thead className={cn('bg-indigo-600', className)}>
       {children}
     </thead>
   );
@@ -145,7 +145,7 @@ export const TableHead: React.FC<TableHeadProps> = ({
     
     if (sortDirection === 'asc') {
       return (
-        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
         </svg>
       );
@@ -153,14 +153,14 @@ export const TableHead: React.FC<TableHeadProps> = ({
     
     if (sortDirection === 'desc') {
       return (
-        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       );
     }
     
     return (
-      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
       </svg>
     );
@@ -168,14 +168,14 @@ export const TableHead: React.FC<TableHeadProps> = ({
 
   return (
     <th className={cn(
-      'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
-      sortable && 'cursor-pointer hover:bg-gray-100 select-none',
+      'px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider border-b border-white/20',
+      sortable && 'cursor-pointer hover:bg-indigo-700 select-none transition-colors duration-200',
       className
     )}
     onClick={sortable ? onSort : undefined}
     >
-      <div className="flex items-center space-x-1">
-        <span>{children}</span>
+      <div className="flex items-center space-x-2">
+        <span className="drop-shadow-sm">{children}</span>
         {getSortIcon()}
       </div>
     </th>

@@ -1,3 +1,149 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+@layer components {
+  /* Primary gradient - Blue to Light Blue */
+  .gradient-background {
+    background: hsla(239, 100%, 67%, 1);
+    background: linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+    background: -moz-linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+    background: -webkit-linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#595CFF", endColorstr="#C6F8FF", GradientType=1 );
+  }
+
+  /* Gradient variations for different use cases */
+  .gradient-primary {
+    background: linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+  }
+
+  .gradient-secondary {
+    background: linear-gradient(90deg, hsla(141, 54%, 86%, 1) 0%, hsla(333, 73%, 85%, 1) 50%, hsla(211, 58%, 79%, 1) 100%);
+  }
+
+  .gradient-warm {
+    background: linear-gradient(90deg, hsla(333, 73%, 85%, 1) 0%, hsla(45, 100%, 85%, 1) 100%);
+  }
+
+  .gradient-cool {
+    background: linear-gradient(90deg, hsla(211, 58%, 79%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+  }
+
+  .gradient-dark {
+    background: linear-gradient(90deg, hsla(239, 100%, 30%, 1) 0%, hsla(187, 100%, 50%, 1) 100%);
+  }
+
+  .gradient-light {
+    background: linear-gradient(90deg, hsla(239, 100%, 95%, 1) 0%, hsla(187, 100%, 98%, 1) 100%);
+  }
+
+  /* Diagonal gradients */
+  .gradient-diagonal {
+    background: linear-gradient(135deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+  }
+
+  .gradient-diagonal-secondary {
+    background: linear-gradient(135deg, hsla(141, 54%, 86%, 1) 0%, hsla(333, 73%, 85%, 1) 50%, hsla(211, 58%, 79%, 1) 100%);
+  }
+
+  /* Radial gradients */
+  .gradient-radial {
+    background: radial-gradient(circle, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+  }
+
+  .gradient-radial-secondary {
+    background: radial-gradient(circle, hsla(141, 54%, 86%, 1) 0%, hsla(333, 73%, 85%, 1) 50%, hsla(211, 58%, 79%, 1) 100%);
+  }
+
+  /* Text gradients */
+  .text-gradient-primary {
+    background: linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-secondary {
+    background: linear-gradient(90deg, hsla(141, 54%, 86%, 1) 0%, hsla(333, 73%, 85%, 1) 50%, hsla(211, 58%, 79%, 1) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Border gradients */
+  .border-gradient-primary {
+    border: 2px solid;
+    border-image: linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%) 1;
+  }
+
+  .border-gradient-secondary {
+    border: 2px solid;
+    border-image: linear-gradient(90deg, hsla(141, 54%, 86%, 1) 0%, hsla(333, 73%, 85%, 1) 50%, hsla(211, 58%, 79%, 1) 100%) 1;
+  }
+
+  /* Button gradients */
+  .btn-gradient-primary {
+    background: linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+    color: white;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient-primary:hover {
+    background: linear-gradient(90deg, hsla(239, 100%, 60%, 1) 0%, hsla(187, 100%, 80%, 1) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(89, 92, 255, 0.3);
+  }
+
+  .btn-gradient-secondary {
+    background: linear-gradient(90deg, hsla(141, 54%, 86%, 1) 0%, hsla(333, 73%, 85%, 1) 50%, hsla(211, 58%, 79%, 1) 100%);
+    color: white;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient-secondary:hover {
+    background: linear-gradient(90deg, hsla(141, 54%, 80%, 1) 0%, hsla(333, 73%, 80%, 1) 50%, hsla(211, 58%, 75%, 1) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(141, 54%, 86%, 0.3);
+  }
+
+  /* Card gradients */
+  .card-gradient-primary {
+    background: linear-gradient(135deg, hsla(239, 100%, 95%, 1) 0%, hsla(187, 100%, 98%, 1) 100%);
+    border: 1px solid rgba(89, 92, 255, 0.1);
+  }
+
+  .card-gradient-secondary {
+    background: linear-gradient(135deg, hsla(141, 54%, 95%, 1) 0%, hsla(333, 73%, 95%, 1) 50%, hsla(211, 58%, 95%, 1) 100%);
+    border: 1px solid rgba(141, 54%, 86%, 0.1);
+  }
+
+  /* Table header gradients */
+  .table-header-gradient-primary {
+    background: linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+  }
+
+  .table-header-gradient-secondary {
+    background: linear-gradient(90deg, hsla(141, 54%, 86%, 1) 0%, hsla(333, 73%, 85%, 1) 50%, hsla(211, 58%, 79%, 1) 100%);
+  }
+
+  .table-header-gradient-dark {
+    background: linear-gradient(90deg, hsla(239, 100%, 30%, 1) 0%, hsla(187, 100%, 50%, 1) 100%);
+  }
+
+  .table-header-gradient-warm {
+    background: linear-gradient(90deg, hsla(333, 73%, 85%, 1) 0%, hsla(45, 100%, 85%, 1) 100%);
+  }
+
+  .table-header-gradient-cool {
+    background: linear-gradient(90deg, hsla(211, 58%, 79%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+  }
+
+  /* Hover effects */
+  .hover-gradient-primary:hover {
+    background: linear-gradient(90deg, hsla(239, 100%, 67%, 1) 0%, hsla(187, 100%, 89%, 1) 100%);
+  }
+
+  .hover-gradient-secondary:hover {
+    background: linear-gradient(90deg, hsla(141, 54%, 86%, 1) 0%, hsla(333, 73%, 85%, 1) 50%, hsla(211, 58%, 79%, 1) 100%);
+  }
+} 
