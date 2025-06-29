@@ -1,14 +1,15 @@
 'use client';
 
+import React from 'react';
 import { useUsers } from '@/lib/hooks/useUsers';
 import { useTransactions } from '@/lib/hooks/useTransactions';
-import { useSession } from 'next-auth/react';
-import { Spinner } from './ui/Spinner';
-import { DataTable } from './ui/Table';
+import { usePredicts } from '@/lib/hooks/usePredicts';
+import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
+import { DataTable, Column } from './ui/Table';
 
-// Define user type based on expected API response
-interface User {
+// User interface for the DataTable
+interface User extends Record<string, unknown> {
   _id: string;
   account: string;
   bank: string;
@@ -16,8 +17,8 @@ interface User {
   __v?: number;
 }
 
-// Define transaction type based on expected API response
-interface Transaction {
+// Transaction interface for the DataTable
+interface Transaction extends Record<string, unknown> {
   _id: string;
   amount: number;
   status: string;
@@ -29,238 +30,298 @@ interface Transaction {
   __v?: number;
 }
 
+// Predict interface for the DataTable
+interface Predict extends Record<string, unknown> {
+  _id: string;
+  userId: {
+    _id: string;
+    account: string;
+    bank: string;
+  };
+  amount: number;
+  message: string;
+  predict: number;
+  streamId: number;
+  isWin: boolean;
+  isPaid: boolean;
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  __v?: number;
+}
+
+// Format currency in Vietnamese dong
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
 export default function QueryExample() {
-  const { data: session, status } = useSession();
-  const usersApiData = useUsers();
-  const transactionsApiData = useTransactions();
+  const usersData = useUsers();
+  const transactionsData = useTransactions();
+  const predictsData = usePredicts();
 
-  // Handle authentication states
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Spinner size="lg" />
-        <span className="ml-3 text-gray-600">Checking authentication...</span>
-      </div>
-    );
-  }
+  // Transform all data to match DataTable expected format
+  const transformedUsersData = {
+    data: usersData.data ? {
+      success: usersData.data.success,
+      result: usersData.data.result
+    } : null,
+    isLoading: usersData.isLoading,
+    error: usersData.error
+  };
 
-  if (status === "unauthenticated") {
-    return (
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p className="text-yellow-800">Please log in to view API data.</p>
-      </div>
-    );
-  }
+  const transformedTransactionsData = {
+    data: transactionsData.data ? {
+      success: transactionsData.data.success,
+      result: transactionsData.data.result
+    } : null,
+    isLoading: transactionsData.isLoading,
+    error: transactionsData.error
+  };
 
-  // Define columns for the Users DataTable
-  const userColumns = [
+  const transformedPredictsData = {
+    data: predictsData.data ? {
+      success: predictsData.data.success,
+      result: predictsData.data.result
+    } : null,
+    isLoading: predictsData.isLoading,
+    error: predictsData.error
+  };
+
+  // Define columns for Users table
+  const userColumns: Column<User>[] = [
     {
       key: '_id' as keyof User,
       label: 'ID',
       sortable: false,
-      render: (value: unknown, row: User, index?: number) => (
-        <span className="font-medium text-gray-900">#{(index ?? 0) + 1}</span>
-      ),
+      render: (_value: unknown, _item: User, index: number, currentPage: number, pageSize: number) => (
+        <span className="font-medium text-gray-900">
+          #{((currentPage - 1) * pageSize) + index + 1}
+        </span>
+      )
     },
     {
       key: 'account' as keyof User,
       label: 'Account',
       sortable: true,
       render: (value: unknown) => (
-        <span className="font-medium text-gray-900">{String(value)}</span>
-      ),
+        <span className="font-medium text-gray-900">{value as string}</span>
+      )
     },
     {
       key: 'bank' as keyof User,
       label: 'Bank',
       sortable: true,
       render: (value: unknown) => (
-        <Badge variant="secondary">{String(value)}</Badge>
-      ),
+        <Badge variant="info">{value as string}</Badge>
+      )
     },
     {
       key: 'amount' as keyof User,
       label: 'Amount',
       sortable: true,
       render: (value: unknown) => (
-        <span className="font-semibold text-green-600">
-          {Number(value).toLocaleString('vi-VN')} VND
+        <span className="font-medium text-green-600">
+          {formatCurrency(value as number)}
         </span>
-      ),
-    },
+      )
+    }
   ];
 
-  // Define columns for the Transactions DataTable
-  const transactionColumns = [
+  // Define columns for Transactions table
+  const transactionColumns: Column<Transaction>[] = [
     {
       key: '_id' as keyof Transaction,
       label: 'ID',
       sortable: false,
-      render: (value: unknown, row: Transaction, index?: number) => (
-        <span className="font-medium text-gray-900">#{(index ?? 0) + 1}</span>
-      ),
+      render: (_value: unknown, _item: Transaction, index: number, currentPage: number, pageSize: number) => (
+        <span className="font-medium text-gray-900">
+          #{((currentPage - 1) * pageSize) + index + 1}
+        </span>
+      )
     },
     {
       key: 'type' as keyof Transaction,
       label: 'Type',
       sortable: true,
       render: (value: unknown) => (
-        <Badge variant="primary">{String(value).charAt(0).toUpperCase() + String(value).slice(1)}</Badge>
-      ),
+        <Badge variant={
+          value === 'deposit' ? 'success' : 
+          value === 'withdraw' ? 'danger' : 
+          'warning'
+        }>
+          {(value as string).charAt(0).toUpperCase() + (value as string).slice(1)}
+        </Badge>
+      )
     },
     {
       key: 'amount' as keyof Transaction,
       label: 'Amount',
       sortable: true,
       render: (value: unknown) => (
-        <span className="font-semibold text-green-600">
-          {Number(value).toLocaleString('vi-VN')} VND
+        <span className="font-medium text-green-600">
+          {formatCurrency(value as number)}
         </span>
-      ),
+      )
     },
     {
       key: 'status' as keyof Transaction,
       label: 'Status',
       sortable: true,
-      render: (value: unknown) => {
-        const status = String(value).toLowerCase();
-        const variant = status === 'completed' || status === 'success' ? 'success' : 
-                       status === 'pending' ? 'warning' : 'default';
-        return (
-          <Badge variant={variant}>{String(value).charAt(0).toUpperCase() + String(value).slice(1)}</Badge>
-        );
-      },
-    },
+      render: (value: unknown) => (
+        <Badge variant={
+          value === 'completed' ? 'success' : 
+          value === 'pending' ? 'warning' : 
+          'danger'
+        }>
+          {(value as string).charAt(0).toUpperCase() + (value as string).slice(1)}
+        </Badge>
+      )
+    }
   ];
 
-  const handleUserClick = (user: User) => {
-    console.log('Clicked user:', user);
-    alert(`Clicked on user: ${user.account} (${user.bank})`);
-  };
-
-  const handleTransactionClick = (transaction: Transaction) => {
-    console.log('Clicked transaction:', transaction);
-    alert(`Transaction: ${transaction.type}\nAmount: ${transaction.amount.toLocaleString('vi-VN')} VND`);
-  };
-
-  // Transform the data to match DataTable expected format
-  const transformedUsersData = {
-    data: usersApiData.data ? {
-      success: usersApiData.data.success,
-      result: usersApiData.data.result
-    } : null,
-    isLoading: usersApiData.isLoading,
-    error: usersApiData.error
-  };
-
-  const transformedTransactionsData = {
-    data: transactionsApiData.data ? {
-      success: transactionsApiData.data.success,
-      result: transactionsApiData.data.result
-    } : null,
-    isLoading: transactionsApiData.isLoading,
-    error: transactionsApiData.error
-  };
+  // Define columns for Predicts table
+  const predictColumns: Column<Predict>[] = [
+    {
+      key: 'id' as keyof Predict,
+      label: 'ID',
+      sortable: false,
+      render: (_value: unknown, _item: Predict, index: number, currentPage: number, pageSize: number) => (
+        <span className="font-medium text-gray-900">
+          #{((currentPage - 1) * pageSize) + index + 1}
+        </span>
+      )
+    },
+    {
+      key: 'userId' as keyof Predict,
+      label: 'Account',
+      sortable: true,
+      render: (value: unknown) => {
+        const userId = value as Predict['userId'];
+        return (
+          <span className="font-medium text-gray-900">{userId.account}</span>
+        );
+      }
+    },
+    {
+      key: 'predict' as keyof Predict,
+      label: 'Predict',
+      sortable: true,
+      render: (value: unknown) => (
+        <Badge variant={Number(value) === 1 ? 'success' : 'warning'}>
+          {Number(value) === 1 ? 'Chẵn' : 'Lẻ'}
+        </Badge>
+      )
+    },
+    {
+      key: 'isWin' as keyof Predict,
+      label: 'Result',
+      sortable: true,
+      render: (value: unknown) => (
+        <Badge variant={value as boolean ? 'success' : 'danger'}>
+          {value as boolean ? 'Win' : 'Loss'}
+        </Badge>
+      )
+    },
+    {
+      key: 'amount' as keyof Predict,
+      label: 'Amount',
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="font-medium text-green-600">
+          {formatCurrency(value as number)}
+        </span>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">React Query API Examples</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">
-            Authenticated as: {session?.user?.name || 'Unknown User'}
-          </span>
-        </div>
-      </div>
-
-      {/* Users DataTable */}
-      <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900">
-            Users API Integration (useUsers Hook)
-          </h4>
-          <p className="text-xs text-gray-500 mt-1">
-            Real-time user data from API with automatic loading and error handling
-          </p>
+      <h1 className="text-2xl font-bold text-gray-900">React Query Integration Demo</h1>
+      
+      {/* Users Section */}
+      <Card>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Users Data (useUsers Hook)</h2>
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <span>Loading: {transformedUsersData.isLoading ? 'Yes' : 'No'}</span>
+            <span>Error: {transformedUsersData.error ? 'Yes' : 'No'}</span>
+            <span>Data Count: {transformedUsersData.data?.result?.data?.length || 0}</span>
+            <span>Total: {transformedUsersData.data?.result?.total || 0}</span>
+          </div>
         </div>
         
-        <DataTable
-          apiData={transformedUsersData}
+        <DataTable<User>
           columns={userColumns}
-          onRowClick={handleUserClick}
-          showPageSizeSelector={true}
-          pageSizeOptions={[5, 10, 20]}
-          onPageChange={(page) => console.log('Users page changed to:', page)}
-          onPageSizeChange={(size) => console.log('Users page size changed to:', size)}
+          apiData={transformedUsersData}
         />
-      </div>
+      </Card>
 
-      {/* Transactions DataTable */}
-      <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900">
-            Transactions API Integration (useTransactions Hook)
-          </h4>
-          <p className="text-xs text-gray-500 mt-1">
-            Real-time transaction data from API with status indicators and formatting
-          </p>
+      {/* Transactions Section */}
+      <Card>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Transactions Data (useTransactions Hook)</h2>
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <span>Loading: {transformedTransactionsData.isLoading ? 'Yes' : 'No'}</span>
+            <span>Error: {transformedTransactionsData.error ? 'Yes' : 'No'}</span>
+            <span>Data Count: {transformedTransactionsData.data?.result?.data?.length || 0}</span>
+            <span>Total: {transformedTransactionsData.data?.result?.total || 0}</span>
+          </div>
         </div>
         
-        <DataTable
-          apiData={transformedTransactionsData}
+        <DataTable<Transaction>
           columns={transactionColumns}
-          onRowClick={handleTransactionClick}
-          showPageSizeSelector={true}
-          pageSizeOptions={[5, 10, 20]}
-          onPageChange={(page) => console.log('Transactions page changed to:', page)}
-          onPageSizeChange={(size) => console.log('Transactions page size changed to:', size)}
+          apiData={transformedTransactionsData}
         />
-      </div>
+      </Card>
 
-      {/* API Information */}
-      <div className="text-xs text-gray-500 bg-gray-50 p-4 rounded-lg">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <strong className="text-gray-700">useUsers Hook Features:</strong>
-            <ul className="mt-2 space-y-1">
-              <li>• ✅ User account data from API</li>
-              <li>• ✅ Bank information display</li>
-              <li>• ✅ Amount formatting (VND)</li>
-              <li>• ✅ Automatic authentication</li>
-              <li>• ✅ 15-minute cache revalidation</li>
-            </ul>
-          </div>
-          
-          <div>
-            <strong className="text-gray-700">useTransactions Hook Features:</strong>
-            <ul className="mt-2 space-y-1">
-              <li>• ✅ Transaction history from API</li>
-              <li>• ✅ Status indicators (badges)</li>
-              <li>• ✅ Type classification</li>
-              <li>• ✅ Date/time formatting</li>
-              <li>• ✅ Amount display (VND)</li>
-            </ul>
+      {/* Predicts Section */}
+      <Card>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Predictions Data (usePredicts Hook)</h2>
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <span>Loading: {transformedPredictsData.isLoading ? 'Yes' : 'No'}</span>
+            <span>Error: {transformedPredictsData.error ? 'Yes' : 'No'}</span>
+            <span>Data Count: {transformedPredictsData.data?.result?.data?.length || 0}</span>
+            <span>Total: {transformedPredictsData.data?.result?.total || 0}</span>
           </div>
         </div>
         
-        <div className="mt-4 pt-3 border-t border-gray-200">
-          <strong className="text-gray-700">API Endpoints:</strong>
-          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                POST /api/admin/user/list
-              </code>
-              <p className="text-xs text-gray-600 mt-1">Users data endpoint</p>
-            </div>
-            <div>
-              <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                POST /api/admin/transaction/list
-              </code>
-              <p className="text-xs text-gray-600 mt-1">Transactions data endpoint</p>
-            </div>
+        <DataTable<Predict>
+          columns={predictColumns}
+          apiData={transformedPredictsData}
+        />
+      </Card>
+
+      {/* Debug Information */}
+      <Card>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Debug Information</h2>
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium text-gray-700">Users Response:</h3>
+            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+              {JSON.stringify(usersData.data, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-700">Transactions Response:</h3>
+            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+              {JSON.stringify(transactionsData.data, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-700">Predicts Response:</h3>
+            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+              {JSON.stringify(predictsData.data, null, 2)}
+            </pre>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 } 

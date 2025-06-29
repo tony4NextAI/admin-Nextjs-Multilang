@@ -6,7 +6,8 @@ export const ApiPath = {
   adminLogin: "admin/login",
   userList: "admin/user/list",
   transactions: "admin/transaction/list",
-  predictions: "admin/predict/list",
+  predicts: "admin/predict/list",
+  balanceHistory: "admin/balance-history",
 
   // Add more endpoints here as needed
 };

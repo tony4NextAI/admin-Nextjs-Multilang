@@ -1,6 +1,6 @@
 'use client';
 
-import { DataTable } from './ui/Table';
+import { DataTable, Column } from './ui/Table';
 import { Badge } from './ui/Badge';
 
 interface User extends Record<string, unknown> {
@@ -10,6 +10,16 @@ interface User extends Record<string, unknown> {
   amount: number;
   __v?: number;
 }
+
+// Format currency in Vietnamese dong
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
 
 // API Response type to match useUsers hook
 interface ApiResponse {
@@ -45,44 +55,43 @@ export default function UsersTable({
   onPageChange, 
   onPageSizeChange 
 }: Readonly<UsersTableProps>) {
-  const columns = [
+  const columns: Column<User>[] = [
     {
       key: '_id' as keyof User,
       label: 'ID',
       sortable: false,
-      render: (value: unknown, row: User, index?: number) => (
+      render: (_value: unknown, _item: User, index: number, currentPage: number, pageSize: number) => (
         <span className="font-medium text-gray-900">
-          #{(index ?? 0) + 1}
+          #{((currentPage - 1) * pageSize) + index + 1}
         </span>
-      ),
+      )
     },
     {
       key: 'account' as keyof User,
       label: 'Account',
       sortable: true,
       render: (value: unknown) => (
-        <span className="font-medium text-gray-900">{String(value)}</span>
-      ),
+        <span className="font-medium text-gray-900">{value as string}</span>
+      )
     },
     {
       key: 'bank' as keyof User,
       label: 'Bank',
       sortable: true,
       render: (value: unknown) => (
-        <Badge variant="secondary">{String(value)}</Badge>
-      ),
+        <Badge variant="info">{value as string}</Badge>
+      )
     },
     {
       key: 'amount' as keyof User,
       label: 'Amount',
       sortable: true,
       render: (value: unknown) => (
-        <span className="font-semibold text-green-600">
-          {Number(value).toLocaleString('vi-VN')} VND
+        <span className="font-medium text-green-600">
+          {formatCurrency(value as number)}
         </span>
-      ),
-    },
-    
+      )
+    }
   ];
 
   // Transform the data to match DataTable expected format

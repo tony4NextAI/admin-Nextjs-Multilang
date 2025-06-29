@@ -14,12 +14,14 @@ function getTranslations(locale: string) {
     en: {
       users: 'Users',
       transactions: 'Transactions',
+      predicts: 'Predictions',
       livestream: 'Livestream',
       logout: 'Logout'
     },
     vi: {
       users: 'Người dùng',
       transactions: 'Giao dịch',
+      predicts: 'Dự đoán',
       livestream: 'Phát trực tiếp',
       logout: 'Đăng xuất'
     }
@@ -34,6 +36,7 @@ export default function DashboardNav({ locale }: DashboardNavProps) {
   const navItems = [
     { href: `/${locale}/dashboard/users`, label: t.users, key: 'users' },
     { href: `/${locale}/dashboard/transactions`, label: t.transactions, key: 'transactions' },
+    { href: `/${locale}/dashboard/predicts`, label: t.predicts, key: 'predicts' },
     { href: `/${locale}/dashboard/livestream`, label: t.livestream, key: 'livestream' },
   ];
 

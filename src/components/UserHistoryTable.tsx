@@ -1,7 +1,8 @@
 'use client';
 
+import React from 'react';
 import dayjs from 'dayjs';
-import { DataTable } from './ui/Table';
+import { DataTable, Column } from './ui/Table';
 import { Badge } from './ui/Badge';
 
 interface HistoryItem extends Record<string, unknown> {
@@ -77,13 +78,15 @@ export default function UserHistoryTable({
     }
   };
 
-  const columns = [
+  const columns: Column<HistoryItem>[] = [
     {
       key: 'id' as keyof HistoryItem,
       label: t.id,
       sortable: false,
-      render: (value: unknown, row: HistoryItem, index?: number) => (
-        <span className="font-medium text-gray-900">#{(index ?? 0) + 1}</span>
+      render: (_value: unknown, _item: HistoryItem, index: number, currentPage: number, pageSize: number) => (
+        <span className="font-medium text-gray-900">
+          #{((currentPage - 1) * pageSize) + index + 1}
+        </span>
       )
     },
     {

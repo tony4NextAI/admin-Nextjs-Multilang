@@ -44,7 +44,7 @@ interface Column<T> {
   key: keyof T;
   label: string;
   sortable?: boolean;
-  render?: (value: unknown, row: T, index?: number) => React.ReactNode;
+  render?: (value: unknown, row: T, index: number, currentPage: number, pageSize: number) => React.ReactNode;
   className?: string;
 }
 
@@ -593,7 +593,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   {columns.map((column) => (
                     <TableCell key={String(column.key)} className={column.className}>
                       {column.render
-                        ? column.render(row[column.key], row, globalIndex)
+                        ? column.render(row[column.key], row, globalIndex, currentPage, currentPageSize)
                         : String(row[column.key] || '')}
                     </TableCell>
                   ))}
@@ -618,4 +618,7 @@ export function DataTable<T extends Record<string, unknown>>({
       )}
     </div>
   );
-} 
+}
+
+// Export Column type for external use
+export type { Column }; 

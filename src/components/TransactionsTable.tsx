@@ -1,6 +1,7 @@
 'use client';
 
-import { DataTable } from './ui/Table';
+import React from 'react';
+import { DataTable, Column } from './ui/Table';
 import { Badge } from './ui/Badge';
 
 // Updated Transaction interface to match API response
@@ -133,14 +134,14 @@ export default function TransactionsTable({
     }
   };
 
-  const columns = [
+  const columns: Column<Transaction>[] = [
     {
       key: '_id' as keyof Transaction,
       label: t.id,
       sortable: false,
-      render: (value: unknown, row: Transaction, index?: number) => (
+      render: (_value: unknown, _item: Transaction, index: number, currentPage: number, pageSize: number) => (
         <span className="font-medium text-gray-900">
-          #{(index ?? 0) + 1}
+          #{((currentPage - 1) * pageSize) + index + 1}
         </span>
       )
     },
