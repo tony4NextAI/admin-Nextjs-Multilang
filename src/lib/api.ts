@@ -8,6 +8,7 @@ export const ApiPath = {
   transactions: "admin/transaction/list",
   predicts: "admin/predict/list",
   balanceHistory: "admin/balance-history",
+  liveStream: "admin/live-stream/list",
 
   // Add more endpoints here as needed
 };

@@ -4,6 +4,7 @@ import React from 'react';
 import { useUsers } from '@/lib/hooks/useUsers';
 import { useTransactions } from '@/lib/hooks/useTransactions';
 import { usePredicts } from '@/lib/hooks/usePredicts';
+import { useBalanceHistory } from '@/lib/hooks/useBalanceHistory';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { DataTable, Column } from './ui/Table';
@@ -50,6 +51,22 @@ interface Predict extends Record<string, unknown> {
   __v?: number;
 }
 
+// BalanceHistory interface for the DataTable
+interface BalanceHistory extends Record<string, unknown> {
+  _id: string;
+  userId: {
+    _id: string;
+    account: string;
+    bank: string;
+  };
+  amount: number;
+  status: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
 // Format currency in Vietnamese dong
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('vi-VN', {
@@ -64,6 +81,7 @@ export default function QueryExample() {
   const usersData = useUsers();
   const transactionsData = useTransactions();
   const predictsData = usePredicts();
+  const balanceHistoryData = useBalanceHistory();
 
   // Transform all data to match DataTable expected format
   const transformedUsersData = {
@@ -91,6 +109,15 @@ export default function QueryExample() {
     } : null,
     isLoading: predictsData.isLoading,
     error: predictsData.error
+  };
+
+  const transformedBalanceHistoryData = {
+    data: balanceHistoryData.data ? {
+      success: balanceHistoryData.data.success,
+      result: balanceHistoryData.data.result
+    } : null,
+    isLoading: balanceHistoryData.isLoading,
+    error: balanceHistoryData.error
   };
 
   // Define columns for Users table
@@ -240,6 +267,82 @@ export default function QueryExample() {
     }
   ];
 
+  // Define columns for Balance History table
+  const balanceHistoryColumns: Column<BalanceHistory>[] = [
+    {
+      key: '_id' as keyof BalanceHistory,
+      label: 'ID',
+      sortable: false,
+      render: (_value: unknown, _item: BalanceHistory, index: number, currentPage: number, pageSize: number) => (
+        <span className="font-medium text-gray-900">
+          #{((currentPage - 1) * pageSize) + index + 1}
+        </span>
+      )
+    },
+    {
+      key: 'userId' as keyof BalanceHistory,
+      label: 'Account',
+      sortable: true,
+      render: (value: unknown) => {
+        const userId = value as BalanceHistory['userId'];
+        return (
+          <span className="font-medium text-gray-900">{userId.account}</span>
+        );
+      }
+    },
+    {
+      key: 'type' as keyof BalanceHistory,
+      label: 'Type',
+      sortable: true,
+      render: (value: unknown) => {
+        const type = value as string;
+        return (
+          <Badge variant={
+            type === 'win' ? 'success' : 
+            type === 'lose' ? 'danger' : 
+            type === 'deposit' ? 'info' :
+            type === 'withdraw' ? 'warning' :
+            'secondary'
+          }>
+            {type === 'win' ? 'Win' : 
+             type === 'lose' ? 'Loss' : 
+             type === 'deposit' ? 'Deposit' :
+             type === 'withdraw' ? 'Withdraw' :
+             type.charAt(0).toUpperCase() + type.slice(1)}
+          </Badge>
+        );
+      }
+    },
+    {
+      key: 'status' as keyof BalanceHistory,
+      label: 'Status',
+      sortable: true,
+      render: (value: unknown) => {
+        const status = value as string;
+        return (
+          <Badge variant={
+            status === 'success' ? 'success' : 
+            status === 'pending' ? 'warning' : 
+            status === 'failed' ? 'danger' :
+            'secondary'
+          }>
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </Badge>
+        );
+      }
+    },
+    {
+      key: 'amount' as keyof BalanceHistory,
+      label: 'Amount',
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="font-medium text-green-600">
+          {formatCurrency(value as number)}
+        </span>
+      )
+    }
+  ];
+
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-gray-900">React Query Integration Demo</h1>
@@ -298,6 +401,24 @@ export default function QueryExample() {
         />
       </Card>
 
+      {/* Balance History Section */}
+      <Card>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Balance History Data (useBalanceHistory Hook)</h2>
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <span>Loading: {transformedBalanceHistoryData.isLoading ? 'Yes' : 'No'}</span>
+            <span>Error: {transformedBalanceHistoryData.error ? 'Yes' : 'No'}</span>
+            <span>Data Count: {transformedBalanceHistoryData.data?.result?.data?.length || 0}</span>
+            <span>Total: {transformedBalanceHistoryData.data?.result?.total || 0}</span>
+          </div>
+        </div>
+        
+        <DataTable<BalanceHistory>
+          columns={balanceHistoryColumns}
+          apiData={transformedBalanceHistoryData}
+        />
+      </Card>
+
       {/* Debug Information */}
       <Card>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Debug Information</h2>
@@ -318,6 +439,12 @@ export default function QueryExample() {
             <h3 className="font-medium text-gray-700">Predicts Response:</h3>
             <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
               {JSON.stringify(predictsData.data, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-700">Balance History Response:</h3>
+            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+              {JSON.stringify(balanceHistoryData.data, null, 2)}
             </pre>
           </div>
         </div>

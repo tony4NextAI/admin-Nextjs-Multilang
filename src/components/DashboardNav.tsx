@@ -15,6 +15,7 @@ function getTranslations(locale: string) {
       users: 'Users',
       transactions: 'Transactions',
       predicts: 'Predictions',
+      balanceHistory: 'Balance History',
       livestream: 'Livestream',
       logout: 'Logout'
     },
@@ -22,6 +23,7 @@ function getTranslations(locale: string) {
       users: 'Người dùng',
       transactions: 'Giao dịch',
       predicts: 'Dự đoán',
+      balanceHistory: 'Lịch sử số dư',
       livestream: 'Phát trực tiếp',
       logout: 'Đăng xuất'
     }
@@ -37,6 +39,7 @@ export default function DashboardNav({ locale }: DashboardNavProps) {
     { href: `/${locale}/dashboard/users`, label: t.users, key: 'users' },
     { href: `/${locale}/dashboard/transactions`, label: t.transactions, key: 'transactions' },
     { href: `/${locale}/dashboard/predicts`, label: t.predicts, key: 'predicts' },
+    { href: `/${locale}/dashboard/balance-history`, label: t.balanceHistory, key: 'balanceHistory' },
     { href: `/${locale}/dashboard/livestream`, label: t.livestream, key: 'livestream' },
   ];
 
