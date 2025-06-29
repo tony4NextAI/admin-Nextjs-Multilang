@@ -5,6 +5,7 @@ import { useUsers } from '@/lib/hooks/useUsers';
 import { useTransactions } from '@/lib/hooks/useTransactions';
 import { usePredicts } from '@/lib/hooks/usePredicts';
 import { useBalanceHistory } from '@/lib/hooks/useBalanceHistory';
+import { useLiveStream } from '@/lib/hooks/useLiveStream';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { DataTable, Column } from './ui/Table';
@@ -67,6 +68,24 @@ interface BalanceHistory extends Record<string, unknown> {
   __v?: number;
 }
 
+// LiveStream interface for the DataTable
+interface LiveStream extends Record<string, unknown> {
+  _id: string;
+  youtubeLink: string;
+  streamer: string;
+  startTime: string;
+  endTime: string;
+  users: Array<unknown>;
+  totalPlay: number;
+  total: number;
+  result: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  __v?: number;
+}
+
 // Format currency in Vietnamese dong
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('vi-VN', {
@@ -82,6 +101,7 @@ export default function QueryExample() {
   const transactionsData = useTransactions();
   const predictsData = usePredicts();
   const balanceHistoryData = useBalanceHistory();
+  const liveStreamData = useLiveStream();
 
   // Transform all data to match DataTable expected format
   const transformedUsersData = {
@@ -118,6 +138,15 @@ export default function QueryExample() {
     } : null,
     isLoading: balanceHistoryData.isLoading,
     error: balanceHistoryData.error
+  };
+
+  const transformedLiveStreamData = {
+    data: liveStreamData.data ? {
+      success: liveStreamData.data.success,
+      result: liveStreamData.data.result
+    } : null,
+    isLoading: liveStreamData.isLoading,
+    error: liveStreamData.error
   };
 
   // Define columns for Users table
@@ -343,6 +372,82 @@ export default function QueryExample() {
     }
   ];
 
+  // Define columns for LiveStream table
+  const liveStreamColumns: Column<LiveStream>[] = [
+    {
+      key: 'id' as keyof LiveStream,
+      label: 'ID',
+      sortable: false,
+      render: (_value: unknown, _item: LiveStream, index: number, currentPage: number, pageSize: number) => (
+        <span className="font-medium text-gray-900">
+          #{((currentPage - 1) * pageSize) + index + 1}
+        </span>
+      )
+    },
+    {
+      key: 'streamer' as keyof LiveStream,
+      label: 'Streamer',
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="font-medium text-gray-900">{value as string}</span>
+      )
+    },
+    {
+      key: 'status' as keyof LiveStream,
+      label: 'Status',
+      sortable: true,
+      render: (value: unknown) => {
+        const status = value as string;
+        
+        // Define progress based on status
+        const getProgress = (status: string) => {
+          switch (status) {
+            case 'progress': return { percent: 75, color: 'bg-blue-500', text: 'In Progress' };
+            case 'completed': return { percent: 100, color: 'bg-green-500', text: 'Completed' };
+            default: return { percent: 0, color: 'bg-gray-500', text: status.charAt(0).toUpperCase() + status.slice(1) };
+          }
+        };
+        
+        const progress = getProgress(status);
+        
+        return (
+          <div className="w-full">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs font-medium text-gray-700">{progress.text}</span>
+              <span className="text-xs text-gray-500">{progress.percent}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full transition-all duration-300 ${progress.color}`}
+                style={{ width: `${progress.percent}%` }}
+              ></div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'totalPlay' as keyof LiveStream,
+      label: 'Total Play',
+      sortable: true,
+      render: (value: unknown) => (
+        <Badge variant="info">
+          {(value as number).toLocaleString()} plays
+        </Badge>
+      )
+    },
+    {
+      key: 'total' as keyof LiveStream,
+      label: 'Total Amount',
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="font-medium text-green-600">
+          {formatCurrency(value as number)}
+        </span>
+      )
+    }
+  ];
+
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-gray-900">React Query Integration Demo</h1>
@@ -419,6 +524,24 @@ export default function QueryExample() {
         />
       </Card>
 
+      {/* LiveStream Section */}
+      <Card>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Live Stream Data (useLiveStream Hook)</h2>
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <span>Loading: {transformedLiveStreamData.isLoading ? 'Yes' : 'No'}</span>
+            <span>Error: {transformedLiveStreamData.error ? 'Yes' : 'No'}</span>
+            <span>Data Count: {transformedLiveStreamData.data?.result?.data?.length || 0}</span>
+            <span>Total: {transformedLiveStreamData.data?.result?.total || 0}</span>
+          </div>
+        </div>
+        
+        <DataTable<LiveStream>
+          columns={liveStreamColumns}
+          apiData={transformedLiveStreamData}
+        />
+      </Card>
+
       {/* Debug Information */}
       <Card>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Debug Information</h2>
@@ -445,6 +568,12 @@ export default function QueryExample() {
             <h3 className="font-medium text-gray-700">Balance History Response:</h3>
             <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
               {JSON.stringify(balanceHistoryData.data, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-700">Live Stream Response:</h3>
+            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+              {JSON.stringify(liveStreamData.data, null, 2)}
             </pre>
           </div>
         </div>

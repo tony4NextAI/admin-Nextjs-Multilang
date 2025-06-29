@@ -31,7 +31,7 @@ function getTranslations(locale: string) {
   return translations[locale as keyof typeof translations] || translations.en;
 }
 
-export default function DashboardNav({ locale }: DashboardNavProps) {
+export default function DashboardNav({ locale }: Readonly<DashboardNavProps>) {
   const pathname = usePathname();
   const t = getTranslations(locale);
 
