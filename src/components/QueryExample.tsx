@@ -5,6 +5,30 @@ import { useSession } from 'next-auth/react';
 import { Spinner } from './ui/Spinner';
 import { Button } from './ui/Button';
 
+// Define user type based on expected API response
+interface User {
+  _id?: string;
+  id?: string;
+  userName?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  createdAt?: string;
+}
+
+// Define API response type
+interface ApiResponse {
+  success: boolean;
+  result?: {
+    list?: User[];
+  };
+  error?: {
+    status: number;
+    code: string;
+    message: string;
+  };
+}
+
 export default function QueryExample() {
   const { data: session, status } = useSession();
   const { data: usersResponse, isLoading, error, refetch, isFetching } = useUsers();
@@ -52,8 +76,9 @@ export default function QueryExample() {
     );
   }
 
-  // Extract users from API response
-  const users = usersResponse?.success ? usersResponse?.result?.list || [] : [];
+  // Extract users from API response with proper typing
+  const apiResponse = usersResponse as ApiResponse;
+  const users: User[] = apiResponse?.success ? (apiResponse?.result?.list || []) : [];
 
   return (
     <div className="space-y-4">
@@ -84,7 +109,7 @@ export default function QueryExample() {
               Last fetched: {new Date().toLocaleTimeString()}
             </p>
             <p className="text-xs text-gray-500">
-              Authenticated as: {session?.user?.userName}
+              Authenticated as: {session?.user?.name || 'Unknown User'}
             </p>
           </div>
         </div>
@@ -95,7 +120,7 @@ export default function QueryExample() {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {users.map((user: any, index: number) => (
+            {users.map((user: User, index: number) => (
               <div key={user._id || index} className="px-4 py-3 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div>
@@ -124,7 +149,8 @@ export default function QueryExample() {
       <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
         <strong>React Query Features:</strong>
         <ul className="mt-1 space-y-1">
-          <li>• ✅ Authentication-aware queries</li>
+          <li>• ✅ Automatic authentication handling</li>
+          <li>• ✅ Centralized token management</li>
           <li>• ✅ Automatic background refetching every 15 minutes</li>
           <li>• ✅ Caching with smart invalidation</li>
           <li>• ✅ Loading, error, and retry states</li>
