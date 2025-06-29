@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLiveStream } from '@/lib/hooks/useLiveStream';
 import LiveStreamTable from '@/components/LiveStreamTable';
+import { FaVideo } from 'react-icons/fa';
 // import QueryExample from '@/components/QueryExample';
 
 // Simple translation function
@@ -53,7 +54,10 @@ export default function LivestreamPage({ params }: LivestreamPageProps) {
     <div className="space-y-8">
       {/* Livestream Management */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+          <FaVideo className="mr-3 h-6 w-6 text-indigo-600" />
+          {t.title}
+        </h1>
         <div className="bg-white shadow-sm rounded-lg">
           <LiveStreamTable 
             apiData={apiData}

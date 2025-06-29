@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import { FaUser, FaLock, FaSignInAlt, FaSpinner } from 'react-icons/fa';
 
 export default function LoginForm({ locale }: Readonly<{ locale: string }>) {
   const [username, setUsername] = useState('');
@@ -52,33 +53,45 @@ export default function LoginForm({ locale }: Readonly<{ locale: string }>) {
         <div className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+              <FaUser className="inline mr-2" />
               Username
             </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaUser className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <FaLock className="inline mr-2" />
               Password
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaLock className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
@@ -92,15 +105,18 @@ export default function LoginForm({ locale }: Readonly<{ locale: string }>) {
           <button
             type="submit"
             disabled={isLoading}
-            className="btn-gradient-primary w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md disabled:opacity-50"
+            className="btn-gradient-primary w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-md disabled:opacity-50"
           >
             {isLoading ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <>
+                <FaSpinner className="animate-spin h-4 w-4 mr-2" />
                 Loading...
-              </div>
+              </>
             ) : (
-              'Sign In'
+              <>
+                <FaSignInAlt className="h-4 w-4 mr-2" />
+                Sign In
+              </>
             )}
           </button>
         </div>

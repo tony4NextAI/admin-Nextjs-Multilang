@@ -3,6 +3,7 @@
 import React from 'react';
 import { usePredicts } from '@/lib/hooks/usePredicts';
 import PredictsTable from '@/components/PredictsTable';
+import { FaChartLine } from 'react-icons/fa';
 
 // Simple translation function
 function getTranslations(locale: string = 'en') {
@@ -48,7 +49,10 @@ export default function PredictsPage({ params }: PredictsPageProps) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.title}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <FaChartLine className="mr-3 h-6 w-6 text-indigo-600" />
+        {t.title}
+      </h1>
       <div className="bg-white shadow-sm rounded-lg">
         <PredictsTable 
           apiData={apiData}

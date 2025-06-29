@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useUsers } from '@/lib/hooks/useUsers';
 import UsersTable from '@/components/UsersTable';
+import { FaUsers } from 'react-icons/fa';
 
 // Simple translation function
 function getTranslations(locale: string = 'en') {
@@ -49,7 +50,10 @@ export default function UsersPage({ params }: UsersPageProps) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.title}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <FaUsers className="mr-3 h-6 w-6 text-indigo-600" />
+        {t.title}
+      </h1>
       <div className="bg-white shadow-sm rounded-lg">
         <UsersTable 
           apiData={apiData}

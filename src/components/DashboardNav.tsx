@@ -3,6 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import { 
+  FaUsers, 
+  FaExchangeAlt, 
+  FaChartLine, 
+  FaHistory, 
+  FaVideo,
+  FaSignOutAlt 
+} from 'react-icons/fa';
 
 interface DashboardNavProps {
   locale: string;
@@ -36,11 +44,11 @@ export default function DashboardNav({ locale }: Readonly<DashboardNavProps>) {
   const t = getTranslations(locale);
 
   const navItems = [
-    { href: `/${locale}/dashboard/users`, label: t.users, key: 'users' },
-    { href: `/${locale}/dashboard/transactions`, label: t.transactions, key: 'transactions' },
-    { href: `/${locale}/dashboard/predicts`, label: t.predicts, key: 'predicts' },
-    { href: `/${locale}/dashboard/balance-history`, label: t.balanceHistory, key: 'balanceHistory' },
-    { href: `/${locale}/dashboard/livestream`, label: t.livestream, key: 'livestream' },
+    { href: `/${locale}/dashboard/users`, label: t.users, key: 'users', icon: FaUsers },
+    { href: `/${locale}/dashboard/transactions`, label: t.transactions, key: 'transactions', icon: FaExchangeAlt },
+    { href: `/${locale}/dashboard/predicts`, label: t.predicts, key: 'predicts', icon: FaChartLine },
+    { href: `/${locale}/dashboard/balance-history`, label: t.balanceHistory, key: 'balanceHistory', icon: FaHistory },
+    { href: `/${locale}/dashboard/livestream`, label: t.livestream, key: 'livestream', icon: FaVideo },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -53,12 +61,13 @@ export default function DashboardNav({ locale }: Readonly<DashboardNavProps>) {
             <Link
               key={item.key}
               href={item.href}
-              className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 isActive(item.href)
                   ? 'bg-indigo-100 text-indigo-700 border-r-2 border-indigo-500'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
+              <item.icon className="mr-3 h-5 w-5" />
               {item.label}
             </Link>
           ))}
@@ -69,8 +78,9 @@ export default function DashboardNav({ locale }: Readonly<DashboardNavProps>) {
         <div className="px-4">
           <button
             onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
-            className="block w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="flex items-center w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
           >
+            <FaSignOutAlt className="mr-3 h-5 w-5" />
             {t.logout}
           </button>
         </div>

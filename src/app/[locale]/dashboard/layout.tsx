@@ -3,6 +3,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import WelcomeUser from "@/components/WelcomeUser";
 import { getServerSession } from "next-auth/next";
 import { redirect } from 'next/navigation';
+import { FaTachometerAlt } from 'react-icons/fa';
 
 
 export default async function DashboardLayout({
@@ -25,7 +26,10 @@ export default async function DashboardLayout({
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-lg flex flex-col h-full fixed inset-y-0 left-0 z-20">
         <div className="px-6 border-b border-gray-200" style={{ paddingTop: '1.3rem', paddingBottom: '1.3rem' }}>
-          <h1 className="text-lg font-semibold text-gray-800">Admin Dashboard</h1>
+          <h1 className="text-lg font-semibold text-gray-800 flex items-center">
+            <FaTachometerAlt className="mr-3 h-5 w-5 text-indigo-600" />
+            Admin Dashboard
+          </h1>
         </div>
         <div className="flex-1 overflow-y-auto">
           <DashboardNav locale={locale} />
