@@ -1,7 +1,7 @@
 'use client';
 
-import { DataTable } from '@/components/ui';
-import { Badge } from '@/components/ui';
+import { DataTable } from './ui/Table';
+import { Badge } from './ui/Badge';
 
 interface Transaction extends Record<string, unknown> {
   id: number;
@@ -13,8 +13,24 @@ interface Transaction extends Record<string, unknown> {
 }
 
 interface TransactionsTableProps {
-  transactions: Transaction[];
+  apiData: {
+    data: {
+      success: boolean;
+      result?: {
+        data?: Transaction[];
+        total?: number;
+        totalPages?: number;
+        page?: number;
+        limit?: number;
+      };
+    } | null;
+    isLoading: boolean;
+    error: Error | null;
+  };
   locale?: string;
+  onRowClick?: (transaction: Transaction) => void;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 // Simple translation function
@@ -40,7 +56,13 @@ function getTranslations(locale: string = 'en') {
   return translations[locale as keyof typeof translations] || translations.en;
 }
 
-export default function TransactionsTable({ transactions, locale = 'en' }: TransactionsTableProps) {
+export default function TransactionsTable({ 
+  apiData, 
+  locale = 'en',
+  onRowClick,
+  onPageChange,
+  onPageSizeChange
+}: TransactionsTableProps) {
   const t = getTranslations(locale);
 
   const formatCurrency = (amount: number) => {
@@ -148,11 +170,14 @@ export default function TransactionsTable({ transactions, locale = 'en' }: Trans
 
   return (
     <DataTable
-      data={transactions}
+      apiData={apiData}
       columns={columns}
-      itemsPerPage={10}
+      onRowClick={onRowClick}
       showPageSizeSelector={true}
       pageSizeOptions={[5, 10, 15, 20]}
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
+      className="shadow-sm"
     />
   );
 } 

@@ -3,35 +3,21 @@
 import { useUsers } from '@/lib/hooks/useUsers';
 import { useSession } from 'next-auth/react';
 import { Spinner } from './ui/Spinner';
-import { Button } from './ui/Button';
+import { DataTable } from './ui/Table';
+import { Badge } from './ui/Badge';
 
 // Define user type based on expected API response
 interface User {
-  _id?: string;
-  id?: string;
-  userName?: string;
-  name?: string;
-  email?: string;
-  phone?: string;
-  createdAt?: string;
-}
-
-// Define API response type
-interface ApiResponse {
-  success: boolean;
-  result?: {
-    list?: User[];
-  };
-  error?: {
-    status: number;
-    code: string;
-    message: string;
-  };
+  _id: string;
+  account: string;
+  bank: string;
+  amount: number;
+  __v?: number;
 }
 
 export default function QueryExample() {
   const { data: session, status } = useSession();
-  const { data: usersResponse, isLoading, error, refetch, isFetching } = useUsers();
+  const apiData = useUsers();
 
   // Handle authentication states
   if (status === "loading") {
@@ -51,117 +37,137 @@ export default function QueryExample() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Spinner size="lg" />
-        <span className="ml-3 text-gray-600">Loading users from API...</span>
-      </div>
-    );
-  }
+  // Define columns for the DataTable
+  const columns = [
+    {
+      key: 'account' as keyof User,
+      label: 'Account',
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="font-medium text-gray-900">{String(value)}</span>
+      ),
+    },
+    {
+      key: 'bank' as keyof User,
+      label: 'Bank',
+      sortable: true,
+      render: (value: unknown) => (
+        <Badge variant="secondary">{String(value)}</Badge>
+      ),
+    },
+    {
+      key: 'amount' as keyof User,
+      label: 'Amount',
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="font-semibold text-green-600">
+          {Number(value).toLocaleString('vi-VN')} VND
+        </span>
+      ),
+    },
+    {
+      key: '_id' as keyof User,
+      label: 'ID',
+      sortable: false,
+      render: (value: unknown) => (
+        <span className="text-xs text-gray-500 font-mono">
+          {String(value).slice(-8)}
+        </span>
+      ),
+    },
+  ];
 
-  if (error) {
-    return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-        <p className="text-red-600">Error loading users: {(error as Error).message}</p>
-        <Button 
-          onClick={() => refetch()} 
-          variant="outline" 
-          size="sm" 
-          className="mt-2"
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
+  const handleRowClick = (user: User) => {
+    console.log('Clicked user:', user);
+    alert(`Clicked on user: ${user.account} (${user.bank})`);
+  };
 
-  // Extract users from API response with proper typing
-  const apiResponse = usersResponse as ApiResponse;
-  const users: User[] = apiResponse?.success ? (apiResponse?.result?.list || []) : [];
+  // Transform the data to match DataTable expected format
+  const transformedApiData = {
+    data: apiData.data ? {
+      success: apiData.data.success,
+      result: apiData.data.result
+    } : null,
+    isLoading: apiData.isLoading,
+    error: apiData.error
+  };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">React Query API Example</h3>
-        <Button 
-          onClick={() => refetch()} 
-          variant="outline" 
-          size="sm"
-          disabled={isFetching}
-        >
-          {isFetching ? (
-            <>
-              <Spinner size="sm" className="mr-2" />
-              Refreshing...
-            </>
-          ) : (
-            'Refresh Data'
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">
+            Authenticated as: {session?.user?.name || 'Unknown User'}
+          </span>
+        </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              Data will automatically refresh every 15 minutes. 
-              Last fetched: {new Date().toLocaleTimeString()}
-            </p>
-            <p className="text-xs text-gray-500">
-              Authenticated as: {session?.user?.name || 'Unknown User'}
-            </p>
-          </div>
+      {/* DataTable with API Integration */}
+      <div className="bg-white border border-gray-200 rounded-lg">
+        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <h4 className="text-sm font-medium text-gray-900">
+            Enhanced DataTable with API Integration
+          </h4>
+          <p className="text-xs text-gray-500 mt-1">
+            Automatic loading, error handling, and pagination from API response
+          </p>
         </div>
         
-        {users.length === 0 ? (
-          <div className="px-4 py-8 text-center text-gray-500">
-            No users found
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-200">
-            {users.map((user: User, index: number) => (
-              <div key={user._id || index} className="px-4 py-3 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {user.userName || user.name || `User ${index + 1}`}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {user.email || user.phone || 'No contact info'}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">
-                      ID: {user._id || user.id || 'N/A'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <DataTable
+          apiData={transformedApiData}
+          columns={columns}
+          onRowClick={handleRowClick}
+          showPageSizeSelector={true}
+          pageSizeOptions={[5, 10, 20, 50]}
+          onPageChange={(page) => console.log('Page changed to:', page)}
+          onPageSizeChange={(size) => console.log('Page size changed to:', size)}
+        />
       </div>
 
-      <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
-        <strong>React Query Features:</strong>
-        <ul className="mt-1 space-y-1">
-          <li>• ✅ Automatic authentication handling</li>
-          <li>• ✅ Centralized token management</li>
-          <li>• ✅ Automatic background refetching every 15 minutes</li>
-          <li>• ✅ Caching with smart invalidation</li>
-          <li>• ✅ Loading, error, and retry states</li>
-          <li>• ✅ Retry on failure (3 attempts)</li>
-          <li>• ✅ Refetch on window focus and network reconnect</li>
+      {/* Features List */}
+      <div className="text-xs text-gray-500 bg-gray-50 p-4 rounded-lg">
+        <strong>Enhanced DataTable Features:</strong>
+        <ul className="mt-2 space-y-1 grid grid-cols-1 md:grid-cols-2 gap-1">
+          <li>• ✅ Automatic loading states with spinner</li>
+          <li>• ✅ Error handling with retry button</li>
+          <li>• ✅ Empty state handling</li>
+          <li>• ✅ API response structure support</li>
+          <li>• ✅ Server-side pagination (when supported)</li>
+          <li>• ✅ Client-side pagination fallback</li>
+          <li>• ✅ Sorting with visual indicators</li>
+          <li>• ✅ Page size selector</li>
+          <li>• ✅ Row click handling</li>
+          <li>• ✅ Responsive design</li>
+          <li>• ✅ Custom column rendering</li>
+          <li>• ✅ TypeScript type safety</li>
         </ul>
         
-        <div className="mt-3 pt-2 border-t border-gray-200">
-          <strong>API Response:</strong>
-          <pre className="mt-1 text-xs bg-gray-100 p-2 rounded overflow-x-auto">
-            {JSON.stringify(usersResponse, null, 2)}
+        <div className="mt-4 pt-3 border-t border-gray-200">
+          <strong>API Response Structure:</strong>
+          <pre className="mt-2 text-xs bg-gray-100 p-3 rounded overflow-x-auto">
+{`{
+  "data": {
+    "success": true,
+    "result": {
+      "data": [
+        {
+          "_id": "685f79274a17621ad94773aa",
+          "account": "6666",
+          "bank": "VCB",
+          "amount": 9500,
+          "__v": 0
+        }
+      ],
+      "total": 1,
+      "totalPages": 1,
+      "page": 1,
+      "limit": 10
+    }
+  },
+  "isLoading": false,
+  "error": null
+}`}
           </pre>
         </div>
       </div>

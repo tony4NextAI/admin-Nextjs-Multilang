@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
 import { Select } from './Select';
+import { Spinner } from './Spinner';
 
 interface TableProps {
   children: React.ReactNode;
@@ -47,14 +48,41 @@ interface Column<T> {
   className?: string;
 }
 
+// API Response structure
+interface ApiResponse<T> {
+  success: boolean;
+  result?: {
+    data?: T[];
+    total?: number;
+    totalPages?: number;
+    page?: number;
+    limit?: number;
+  };
+  error?: {
+    status: number;
+    code: string;
+    message: string;
+  };
+}
+
+// API Data structure for the DataTable
+interface ApiData<T> {
+  data: ApiResponse<T> | null;
+  isLoading: boolean;
+  error: Error | null;
+}
+
 interface DataTableProps<T> {
-  data: T[];
+  apiData: ApiData<T>;
   columns: Column<T>[];
   onRowClick?: (row: T) => void;
   className?: string;
   itemsPerPage?: number;
   showPageSizeSelector?: boolean;
   pageSizeOptions?: number[];
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  enableClientSidePagination?: boolean; // For fallback when API doesn't support pagination
 }
 
 interface PaginationProps {
@@ -374,28 +402,38 @@ export const Pagination: React.FC<PaginationProps> = ({
   );
 };
 
-// Enhanced DataTable Component
+// Enhanced DataTable Component with API Integration
 export function DataTable<T extends Record<string, unknown>>({
-  data,
+  apiData,
   columns,
   onRowClick,
   className = '',
   itemsPerPage = 10,
   showPageSizeSelector = false,
-  pageSizeOptions = [5, 10, 20, 50]
-}: DataTableProps<T>) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(itemsPerPage);
+  pageSizeOptions = [5, 10, 20, 50],
+  onPageChange,
+  onPageSizeChange,
+  enableClientSidePagination = false
+}: Readonly<DataTableProps<T>>) {
   const [sortConfig, setSortConfig] = useState<{
     key: keyof T | null;
     direction: 'asc' | 'desc';
   }>({ key: null, direction: 'asc' });
 
-  // Sorting logic
-  const sortedData = useMemo(() => {
-    if (!sortConfig.key) return data;
+  // Client-side pagination state (fallback when API doesn't support pagination)
+  const [clientCurrentPage, setClientCurrentPage] = useState(1);
+  const [clientPageSize, setClientPageSize] = useState(itemsPerPage);
 
-    return [...data].sort((a, b) => {
+  // Extract table data from API response
+  const tableData = useMemo(() => {
+    return apiData.data?.success ? (apiData.data.result?.data || []) : [];
+  }, [apiData.data]);
+
+  // Client-side sorting logic
+  const sortedData = useMemo(() => {
+    if (!sortConfig.key) return tableData;
+
+    return [...tableData].sort((a, b) => {
       const aValue = a[sortConfig.key!];
       const bValue = b[sortConfig.key!];
 
@@ -407,12 +445,92 @@ export function DataTable<T extends Record<string, unknown>>({
       }
       return 0;
     });
-  }, [data, sortConfig]);
+  }, [tableData, sortConfig]);
 
-  // Pagination logic
-  const totalPages = Math.ceil(sortedData.length / currentPageSize);
-  const startIndex = (currentPage - 1) * currentPageSize;
-  const paginatedData = sortedData.slice(startIndex, startIndex + currentPageSize);
+  // Handle loading state
+  if (apiData.isLoading) {
+    return (
+      <div className={cn('bg-white shadow rounded-lg', className)}>
+        <div className="flex items-center justify-center py-16">
+          <div className="flex items-center space-x-3">
+            <Spinner size="lg" />
+            <span className="text-lg text-gray-600">Loading data...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (apiData.error) {
+    return (
+      <div className={cn('bg-white shadow rounded-lg', className)}>
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="mx-auto h-12 w-12 text-red-400 mb-4">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Data</h3>
+            <p className="text-sm text-gray-500 mb-4">{apiData.error.message}</p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle no data or unsuccessful response
+  if (!apiData.data?.success || !apiData.data?.result?.data) {
+    return (
+      <div className={cn('bg-white shadow rounded-lg', className)}>
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-4 4-4-4m0 0L9 9l-4-4" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Data Available</h3>
+            <p className="text-sm text-gray-500">There are no records to display at this time.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const responseData = apiData.data.result;
+
+  // Use API pagination data if available, otherwise fall back to client-side pagination
+  const useServerPagination = !enableClientSidePagination && 
+    responseData.totalPages !== undefined && 
+    responseData.page !== undefined;
+
+  let displayData = tableData;
+  let currentPage = useServerPagination ? (responseData.page || 1) : clientCurrentPage;
+  let totalPages = useServerPagination ? (responseData.totalPages || 1) : Math.ceil(tableData.length / clientPageSize);
+  let totalItems = useServerPagination ? (responseData.total || 0) : tableData.length;
+  let currentPageSize = useServerPagination ? (responseData.limit || itemsPerPage) : clientPageSize;
+
+  // Client-side pagination (when API doesn't support it)
+  if (enableClientSidePagination || !useServerPagination) {
+    // Client-side pagination
+    const startIndex = (clientCurrentPage - 1) * clientPageSize;
+    displayData = sortedData.slice(startIndex, startIndex + clientPageSize);
+    totalPages = Math.ceil(sortedData.length / clientPageSize);
+    totalItems = sortedData.length;
+    currentPage = clientCurrentPage;
+    currentPageSize = clientPageSize;
+  }
 
   const handleSort = (key: keyof T) => {
     setSortConfig(prev => ({
@@ -422,53 +540,61 @@ export function DataTable<T extends Record<string, unknown>>({
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    if (useServerPagination && onPageChange) {
+      onPageChange(page);
+    } else {
+      setClientCurrentPage(page);
+    }
   };
 
   const handlePageSizeChange = (pageSize: number) => {
-    setCurrentPageSize(pageSize);
-    setCurrentPage(1); // Reset to first page when changing page size
+    if (useServerPagination && onPageSizeChange) {
+      onPageSizeChange(pageSize);
+    } else {
+      setClientPageSize(pageSize);
+      setClientCurrentPage(1); // Reset to first page when changing page size
+    }
   };
 
   return (
     <div className={cn('bg-white shadow rounded-lg', className)}>
       <div className="overflow-hidden rounded-t-lg">
         <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((column) => (
-              <TableHead
-                key={String(column.key)}
-                sortable={column.sortable}
-                onSort={() => column.sortable && handleSort(column.key)}
-                sortDirection={
-                  sortConfig.key === column.key ? sortConfig.direction : null
-                }
-                className={column.className}
-              >
-                {column.label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedData.map((row, index) => (
-            <TableRow
-              key={index}
-              onClick={() => onRowClick?.(row)}
-              className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
-            >
+          <TableHeader>
+            <TableRow>
               {columns.map((column) => (
-                <TableCell key={String(column.key)} className={column.className}>
-                  {column.render
-                    ? column.render(row[column.key], row)
-                    : String(row[column.key] || '')}
-                </TableCell>
+                <TableHead
+                  key={String(column.key)}
+                  sortable={column.sortable}
+                  onSort={() => column.sortable && handleSort(column.key)}
+                  sortDirection={
+                    sortConfig.key === column.key ? sortConfig.direction : null
+                  }
+                  className={column.className}
+                >
+                  {column.label}
+                </TableHead>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {displayData.map((row, index) => (
+              <TableRow
+                key={row._id as string || row.id as string || index}
+                onClick={() => onRowClick?.(row)}
+                className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
+              >
+                {columns.map((column) => (
+                  <TableCell key={String(column.key)} className={column.className}>
+                    {column.render
+                      ? column.render(row[column.key], row)
+                      : String(row[column.key] || '')}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
       
       {totalPages > 1 && (
@@ -477,7 +603,7 @@ export function DataTable<T extends Record<string, unknown>>({
           totalPages={totalPages}
           onPageChange={handlePageChange}
           itemsPerPage={currentPageSize}
-          totalItems={sortedData.length}
+          totalItems={totalItems}
           onPageSizeChange={showPageSizeSelector ? handlePageSizeChange : undefined}
           showPageSizeSelector={showPageSizeSelector}
           pageSizeOptions={pageSizeOptions}

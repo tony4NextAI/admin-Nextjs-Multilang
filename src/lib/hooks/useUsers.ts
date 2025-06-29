@@ -11,8 +11,31 @@ export const defaultOption = {
   },
 };
 
-const fetchUsers = async (_queryParams = defaultOption) => {
-  const users = await apiAuthFetch(ApiPath.userList, {
+// Define the API response type
+interface ApiResponse {
+  success: boolean;
+  result?: {
+    data?: Array<{
+      _id: string;
+      account: string;
+      bank: string;
+      amount: number;
+      __v?: number;
+    }>;
+    total?: number;
+    totalPages?: number;
+    page?: number;
+    limit?: number;
+  };
+  error?: {
+    status: number;
+    code: string;
+    message: string;
+  };
+}
+
+const fetchUsers = async (_queryParams = defaultOption): Promise<ApiResponse> => {
+  const users = await apiAuthFetch<ApiResponse>(ApiPath.userList, {
     method: "POST",
     body: {
       ..._queryParams,
@@ -24,10 +47,16 @@ const fetchUsers = async (_queryParams = defaultOption) => {
 export const useUsers = () => {
   const { status } = useSession();
   
-  return useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["users"],
     queryFn: () => fetchUsers(defaultOption),
     // Only run the query if we have a valid session
     enabled: status === "authenticated",
   });
+
+  return {
+    data,
+    isLoading,
+    error,
+  };
 };

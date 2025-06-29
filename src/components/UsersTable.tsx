@@ -1,104 +1,102 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import dayjs from 'dayjs';
-import { DataTable } from '@/components/ui';
-import { useUsers } from '@/lib/hooks/useUsers';
+import { DataTable } from './ui/Table';
+import { Badge } from './ui/Badge';
 
 interface User extends Record<string, unknown> {
-  account: number;
+  _id: string;
+  account: string;
   bank: string;
   amount: number;
-  created: Date;
+  __v?: number;
+}
+
+// API Response type to match useUsers hook
+interface ApiResponse {
+  success: boolean;
+  result?: {
+    data?: User[];
+    total?: number;
+    totalPages?: number;
+    page?: number;
+    limit?: number;
+  };
+  error?: {
+    status: number;
+    code: string;
+    message: string;
+  };
 }
 
 interface UsersTableProps {
-  locale: string;
+  apiData: {
+    data: ApiResponse | undefined;
+    isLoading: boolean;
+    error: Error | null;
+  };
+  onRowClick?: (user: User) => void;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
-// Simple translation function
-function getTranslations(locale: string = 'en') {
-  const translations = {
-    en: {
-      account: 'Account',
-      bank: 'Bank',
-      amount: 'Amount',
-      created: 'Created'
-    },
-    vi: {
-      account: 'Tài khoản',
-      bank: 'Ngân hàng',
-      amount: 'Số tiền',
-      created: 'Ngày tạo'
-    }
-  };
-  return translations[locale as keyof typeof translations] || translations.en;
-}
-
-export default function UsersTable({  locale }: Readonly<UsersTableProps>) {
-  const t = getTranslations(locale);
-  const router = useRouter();
-
-  const users = useUsers();
-
-  console.log('====================================');
-  console.log({users});
-  console.log('====================================');
-
-  const handleRowClick = (user: User) => {
-    router.push(`/${locale}/dashboard/user-history/${user.account}`);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(amount);
-  };
-
+export default function UsersTable({ 
+  apiData, 
+  onRowClick, 
+  onPageChange, 
+  onPageSizeChange 
+}: Readonly<UsersTableProps>) {
   const columns = [
     {
       key: 'account' as keyof User,
-      label: t.account,
+      label: 'Account',
       sortable: true,
       render: (value: unknown) => (
-        <span className="font-medium text-gray-900">{value as number}</span>
-      )
+        <span className="font-medium text-gray-900">{String(value)}</span>
+      ),
     },
     {
       key: 'bank' as keyof User,
-      label: t.bank,
+      label: 'Bank',
       sortable: true,
       render: (value: unknown) => (
-        <span className="text-gray-500">{value as string}</span>
-      )
+        <Badge variant="secondary">{String(value)}</Badge>
+      ),
     },
     {
       key: 'amount' as keyof User,
-      label: t.amount,
+      label: 'Amount',
       sortable: true,
       render: (value: unknown) => (
-        <span className="text-gray-500">{formatCurrency(value as number)}</span>
-      )
+        <span className="font-semibold text-green-600">
+          {Number(value).toLocaleString('vi-VN')} VND
+        </span>
+      ),
     },
-    {
-      key: 'created' as keyof User,
-      label: t.created,
-      sortable: true,
-      render: (value: unknown) => (
-        <span className="text-gray-500">{dayjs(value as Date).format('DD/MM/YYYY')}</span>
-      )
-    }
+    
   ];
+
+  // Transform the data to match DataTable expected format
+  const transformedApiData = {
+    data: apiData.data ? {
+      success: apiData.data.success,
+      result: apiData.data.result
+    } : null,
+    isLoading: apiData.isLoading,
+    error: apiData.error
+  };
+
 
   return (
     <DataTable
-      data={[]}
       columns={columns}
-      onRowClick={handleRowClick}
-      itemsPerPage={10}
+      onRowClick={onRowClick}
+      apiData={transformedApiData}
       showPageSizeSelector={true}
-      pageSizeOptions={[5, 10, 15, 20]}
+      enableClientSidePagination={true}
+      pageSizeOptions={[5, 10, 20, 50]}
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
+      className="shadow-sm"
     />
   );
 } 

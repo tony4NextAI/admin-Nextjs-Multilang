@@ -1,3 +1,6 @@
+'use client';
+
+import React from 'react';
 import TransactionsTable from '@/components/TransactionsTable';
 
 // Mock data - in real app this would come from database
@@ -161,15 +164,61 @@ function getTranslations(locale: string = 'en') {
   return translations[locale as keyof typeof translations] || translations.en;
 }
 
-export default async function TransactionsPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+interface TransactionsPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export default function TransactionsPage({ params }: TransactionsPageProps) {
+  const [locale, setLocale] = React.useState<string>('en');
+  
+  React.useEffect(() => {
+    params.then(({ locale }) => setLocale(locale));
+  }, [params]);
+
   const t = getTranslations(locale);
+
+  // Mock API data structure
+  const mockApiData = {
+    data: {
+      success: true,
+      result: {
+        data: mockTransactions,
+        total: mockTransactions.length,
+        totalPages: Math.ceil(mockTransactions.length / 10),
+        page: 1,
+        limit: 10
+      }
+    },
+    isLoading: false,
+    error: null
+  };
+
+  const handleRowClick = (transaction: { id: number; message: string }) => {
+    console.log('Clicked transaction:', transaction);
+    alert(`Transaction #${transaction.id}: ${transaction.message}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    console.log('Page changed to:', page);
+    // In a real app, this would trigger an API call
+  };
+
+  const handlePageSizeChange = (pageSize: number) => {
+    console.log('Page size changed to:', pageSize);
+    // In a real app, this would trigger an API call
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.title}</h1>
       <div className="bg-white shadow-sm rounded-lg">
-        <TransactionsTable transactions={mockTransactions} locale={locale} />
+        <TransactionsTable 
+          apiData={mockApiData}
+          locale={locale}
+          onRowClick={handleRowClick}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </div>
     </div>
   );

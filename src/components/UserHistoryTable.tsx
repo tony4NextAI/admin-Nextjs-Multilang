@@ -1,7 +1,8 @@
 'use client';
 
 import dayjs from 'dayjs';
-import { DataTable, Badge } from '@/components/ui';
+import { DataTable } from './ui/Table';
+import { Badge } from './ui/Badge';
 
 interface HistoryItem extends Record<string, unknown> {
   id: number;
@@ -11,8 +12,24 @@ interface HistoryItem extends Record<string, unknown> {
 }
 
 interface UserHistoryTableProps {
-  history: HistoryItem[];
+  apiData: {
+    data: {
+      success: boolean;
+      result?: {
+        data?: HistoryItem[];
+        total?: number;
+        totalPages?: number;
+        page?: number;
+        limit?: number;
+      };
+    } | null;
+    isLoading: boolean;
+    error: Error | null;
+  };
   locale?: string;
+  onRowClick?: (historyItem: HistoryItem) => void;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 // Simple translation function
@@ -34,7 +51,13 @@ function getTranslations(locale: string = 'en') {
   return translations[locale as keyof typeof translations] || translations.en;
 }
 
-export default function UserHistoryTable({ history, locale = 'en' }: UserHistoryTableProps) {
+export default function UserHistoryTable({ 
+  apiData, 
+  locale = 'en',
+  onRowClick,
+  onPageChange,
+  onPageSizeChange
+}: UserHistoryTableProps) {
   const t = getTranslations(locale);
 
   const getActionVariant = (action: string): 'success' | 'warning' | 'primary' | 'secondary' | 'default' | 'danger' | 'info' => {
@@ -98,11 +121,14 @@ export default function UserHistoryTable({ history, locale = 'en' }: UserHistory
 
   return (
     <DataTable
-      data={history}
+      apiData={apiData}
       columns={columns}
-      itemsPerPage={10}
+      onRowClick={onRowClick}
       showPageSizeSelector={true}
       pageSizeOptions={[5, 10, 15, 20]}
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
+      className="shadow-sm"
     />
   );
 } 

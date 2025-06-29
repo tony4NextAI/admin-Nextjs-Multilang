@@ -1,3 +1,6 @@
+'use client';
+
+import React from 'react';
 import UserHistoryTable from '@/components/UserHistoryTable';
 import Link from 'next/link';
 
@@ -40,13 +43,53 @@ function getTranslations(locale: string) {
   return translations[locale as keyof typeof translations] || translations.en;
 }
 
-export default async function UserHistoryPage({ 
-  params
-}: { 
-  params: Promise<{ locale: string; account: string }> 
-}) {
-  const { locale, account } = await params;
+interface UserHistoryPageProps {
+  params: Promise<{ locale: string; account: string }>;
+}
+
+export default function UserHistoryPage({ params }: UserHistoryPageProps) {
+  const [locale, setLocale] = React.useState<string>('en');
+  const [account, setAccount] = React.useState<string>('');
+  
+  React.useEffect(() => {
+    params.then(({ locale, account }) => {
+      setLocale(locale);
+      setAccount(account);
+    });
+  }, [params]);
+
   const t = getTranslations(locale);
+
+  // Mock API data structure
+  const mockApiData = {
+    data: {
+      success: true,
+      result: {
+        data: mockUserHistory,
+        total: mockUserHistory.length,
+        totalPages: Math.ceil(mockUserHistory.length / 10),
+        page: 1,
+        limit: 10
+      }
+    },
+    isLoading: false,
+    error: null
+  };
+
+  const handleRowClick = (historyItem: { id: number; action: string; details: string }) => {
+    console.log('Clicked history item:', historyItem);
+    alert(`Action: ${historyItem.action}\nDetails: ${historyItem.details}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    console.log('Page changed to:', page);
+    // In a real app, this would trigger an API call
+  };
+
+  const handlePageSizeChange = (pageSize: number) => {
+    console.log('Page size changed to:', pageSize);
+    // In a real app, this would trigger an API call
+  };
 
   return (
     <div>
@@ -66,7 +109,13 @@ export default async function UserHistoryPage({
       </div>
       
       <div className="bg-white shadow-sm rounded-lg">
-        <UserHistoryTable history={mockUserHistory} locale={locale} />
+        <UserHistoryTable 
+          apiData={mockApiData}
+          locale={locale}
+          onRowClick={handleRowClick}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </div>
     </div>
   );
