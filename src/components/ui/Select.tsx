@@ -107,7 +107,7 @@ export const Select: React.FC<SelectProps> = ({
         </button>
 
         {isOpen && (
-          <div className="absolute z-[9999] mt-1 w-full bg-white shadow-xl max-h-60 rounded-lg py-1 text-base border border-gray-200 overflow-auto focus:outline-none">
+          <div className="absolute z-[99999] mt-1 w-full bg-white shadow-xl max-h-60 rounded-lg py-1 text-base border border-gray-200 overflow-auto focus:outline-none">
             {options.map((option) => (
               <button
                 key={option.value}

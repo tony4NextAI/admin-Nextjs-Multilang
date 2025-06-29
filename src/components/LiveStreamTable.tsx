@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
-import { DataTable, Column } from './ui/Table';
+import React, { useState } from 'react';
 import { Badge } from './ui/Badge';
+import { Column, DataTable } from './ui/Table';
+import LiveStreamDetailsModal from './LiveStreamDetailsModal';
 
 // Define the LiveStream type based on the API response
 export interface LiveStream extends Record<string, unknown> {
@@ -27,14 +28,14 @@ function getTranslations(locale: string = 'en') {
   const translations = {
     en: {
       id: 'ID',
-      streamer: 'Streamer',
-      youtubeLink: 'YouTube Link',
-      duration: 'Duration',
-      totalPlay: 'Total Play',
-      total: 'Total Amount',
-      result: 'Result',
-      status: 'Status',
-      createdAt: 'Created At'
+      streamer: 'Người phát',
+      youtubeLink: 'Link YouTube',
+      duration: 'Thời lượng',
+      totalPlay: 'Tổng lượt chơi',
+      total: 'Tổng tiền',
+      result: 'Kết quả',
+      status: 'Trạng thái',
+      createdAt: 'Ngày tạo'
     },
     vi: {
       id: 'ID',
@@ -89,13 +90,6 @@ const formatDuration = (startTime: string, endTime: string): string => {
   return `${minutes}m`;
 };
 
-// Extract YouTube video ID from URL
-const getYouTubeVideoId = (url: string): string | null => {
-  const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
-  const match = url.match(regex);
-  return match ? match[1] : null;
-};
-
 export interface LiveStreamTableProps {
   apiData: {
     data?: {
@@ -120,6 +114,8 @@ export interface LiveStreamTableProps {
   onRowClick?: (liveStream: LiveStream) => void;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  onUpdateResult?: (id: number, result: number) => void;
+  isUpdating?: boolean;
 }
 
 export default function LiveStreamTable({
@@ -127,9 +123,32 @@ export default function LiveStreamTable({
   locale = 'en',
   onRowClick,
   onPageChange,
-  onPageSizeChange
+  onPageSizeChange,
+  onUpdateResult,
+  isUpdating = false
 }: Readonly<LiveStreamTableProps>) {
   const t = getTranslations(locale);
+  const [selectedLivestream, setSelectedLivestream] = useState<LiveStream | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleRowClick = (livestream: LiveStream) => {
+    setSelectedLivestream(livestream);
+    setIsModalOpen(true);
+    if (onRowClick) {
+      onRowClick(livestream);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedLivestream(null);
+  };
+
+  const handleUpdateResult = (id: number, result: number) => {
+    if (onUpdateResult) {
+      onUpdateResult(id, result);
+    }
+  };
 
   const columns: Column<LiveStream>[] = [
     {
@@ -156,16 +175,9 @@ export default function LiveStreamTable({
       sortable: false,
       render: (value: unknown) => {
         const url = value as string;
-        const videoId = getYouTubeVideoId(url);
         return (
           <div className="flex items-center space-x-2">
-            {videoId && (
-              <img 
-                src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`}
-                alt="YouTube thumbnail"
-                className="w-16 h-12 object-cover rounded"
-              />
-            )}
+         
             <a
               href={url}
               target="_blank"
@@ -186,7 +198,7 @@ export default function LiveStreamTable({
       sortable: true,
       render: (value: unknown, item: LiveStream) => (
         <span className="text-gray-700">
-          {formatDuration(value as string, item.endTime as string)}
+          {formatDuration(value as string, item.endTime)}
         </span>
       )
     },
@@ -214,11 +226,31 @@ export default function LiveStreamTable({
       key: 'result' as keyof LiveStream,
       label: t.result,
       sortable: true,
-      render: (value: unknown) => (
-        <Badge variant={Number(value) === 1 ? 'success' : 'warning'}>
-          {Number(value) === 1 ? 'Thắng' : 'Thua'}
-        </Badge>
-      )
+      render: (value: unknown) => {
+        const result = Number(value);
+        switch (result) {
+          case 0:
+            return (
+              <Badge variant="default">
+                Chưa xác định
+              </Badge>
+            );
+          case 1:
+            return (
+              <Badge variant="warning">
+                Thua
+              </Badge>
+            );
+          case 2:
+            return (
+              <Badge variant="success">
+                Thắng
+              </Badge>
+            );
+          default:
+            return null;
+        }
+      }
     },
     {
       key: 'status' as keyof LiveStream,
@@ -280,12 +312,22 @@ export default function LiveStreamTable({
   };
 
   return (
-    <DataTable<LiveStream>
-      columns={columns}
-      apiData={transformedApiData}
-      onRowClick={onRowClick}
-      onPageChange={onPageChange}
-      onPageSizeChange={onPageSizeChange}
-    />
+    <>
+      <DataTable<LiveStream>
+        columns={columns}
+        apiData={transformedApiData}
+        onRowClick={handleRowClick}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
+      <LiveStreamDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        livestream={selectedLivestream}
+        onUpdateResult={handleUpdateResult}
+        isUpdating={isUpdating}
+        locale={locale}
+      />
+    </>
   );
 } 
