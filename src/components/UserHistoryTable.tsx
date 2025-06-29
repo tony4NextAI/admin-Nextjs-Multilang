@@ -57,7 +57,7 @@ export default function UserHistoryTable({
   onRowClick,
   onPageChange,
   onPageSizeChange
-}: UserHistoryTableProps) {
+}: Readonly<UserHistoryTableProps>) {
   const t = getTranslations(locale);
 
   const getActionVariant = (action: string): 'success' | 'warning' | 'primary' | 'secondary' | 'default' | 'danger' | 'info' => {
@@ -81,9 +81,9 @@ export default function UserHistoryTable({
     {
       key: 'id' as keyof HistoryItem,
       label: t.id,
-      sortable: true,
-      render: (value: unknown) => (
-        <span className="font-medium text-gray-900">#{value as number}</span>
+      sortable: false,
+      render: (value: unknown, row: HistoryItem, index?: number) => (
+        <span className="font-medium text-gray-900">#{(index ?? 0) + 1}</span>
       )
     },
     {

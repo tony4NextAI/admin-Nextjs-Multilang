@@ -47,6 +47,16 @@ export default function UsersTable({
 }: Readonly<UsersTableProps>) {
   const columns = [
     {
+      key: '_id' as keyof User,
+      label: 'ID',
+      sortable: false,
+      render: (value: unknown, row: User, index?: number) => (
+        <span className="font-medium text-gray-900">
+          #{(index ?? 0) + 1}
+        </span>
+      ),
+    },
+    {
       key: 'account' as keyof User,
       label: 'Account',
       sortable: true,

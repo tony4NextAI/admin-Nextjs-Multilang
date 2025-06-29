@@ -3,27 +3,39 @@
 import { DataTable } from './ui/Table';
 import { Badge } from './ui/Badge';
 
+// Updated Transaction interface to match API response
 interface Transaction extends Record<string, unknown> {
-  id: number;
-  message: string;
+  _id: string;
   amount: number;
   status: string;
+  message: string;
   type: string;
-  note: string;
+  time: string;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
+// API Response type to match useTransactions hook
+interface TransactionApiResponse {
+  success: boolean;
+  result?: {
+    data?: Transaction[];
+    total?: number;
+    totalPages?: number;
+    page?: number;
+    limit?: number;
+  };
+  error?: {
+    status: number;
+    code: string;
+    message: string;
+  };
 }
 
 interface TransactionsTableProps {
   apiData: {
-    data: {
-      success: boolean;
-      result?: {
-        data?: Transaction[];
-        total?: number;
-        totalPages?: number;
-        page?: number;
-        limit?: number;
-      };
-    } | null;
+    data: TransactionApiResponse | undefined;
     isLoading: boolean;
     error: Error | null;
   };
@@ -42,7 +54,8 @@ function getTranslations(locale: string = 'en') {
       amount: 'Amount',
       status: 'Status',
       type: 'Type',
-      note: 'Note'
+      time: 'Time',
+      createdAt: 'Created'
     },
     vi: {
       id: 'ID',
@@ -50,7 +63,8 @@ function getTranslations(locale: string = 'en') {
       amount: 'Số tiền',
       status: 'Trạng thái',
       type: 'Loại',
-      note: 'Ghi chú'
+      time: 'Thời gian',
+      createdAt: 'Ngày tạo'
     }
   };
   return translations[locale as keyof typeof translations] || translations.en;
@@ -62,7 +76,7 @@ export default function TransactionsTable({
   onRowClick,
   onPageChange,
   onPageSizeChange
-}: TransactionsTableProps) {
+}: Readonly<TransactionsTableProps>) {
   const t = getTranslations(locale);
 
   const formatCurrency = (amount: number) => {
@@ -72,31 +86,48 @@ export default function TransactionsTable({
     }).format(amount);
   };
 
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
   const getStatusVariant = (status: string): 'success' | 'warning' | 'danger' | 'default' => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'completed':
+      case 'success':
         return 'success';
       case 'pending':
+      case 'processing':
         return 'warning';
       case 'failed':
+      case 'error':
         return 'danger';
+      case 'unknown':
+      case 'unknow': // Handle typo in API
+        return 'default';
       default:
         return 'default';
     }
   };
 
   const getTypeVariant = (type: string): 'primary' | 'secondary' | 'success' | 'warning' | 'default' => {
-    switch (type) {
+    switch (type.toLowerCase()) {
+      case 'deposit':
+        return 'success';
+      case 'withdrawal':
+        return 'warning';
+      case 'transfer':
+        return 'primary';
       case 'payment':
         return 'primary';
       case 'refund':
         return 'secondary';
-      case 'subscription':
-        return 'primary';
-      case 'bonus':
-        return 'success';
-      case 'fee':
-        return 'warning';
       default:
         return 'default';
     }
@@ -104,24 +135,16 @@ export default function TransactionsTable({
 
   const columns = [
     {
-      key: 'id' as keyof Transaction,
+      key: '_id' as keyof Transaction,
       label: t.id,
-      sortable: true,
-      render: (value: unknown) => (
-        <span className="font-medium text-gray-900">#{value as number}</span>
+      sortable: false,
+      render: (value: unknown, row: Transaction, index?: number) => (
+        <span className="font-medium text-gray-900">
+          #{(index ?? 0) + 1}
+        </span>
       )
     },
-    {
-      key: 'message' as keyof Transaction,
-      label: t.message,
-      sortable: true,
-      render: (value: unknown) => (
-        <span className="text-gray-500 max-w-xs truncate block" title={value as string}>
-          {value as string}
-        </span>
-      ),
-      className: 'max-w-xs'
-    },
+    
     {
       key: 'amount' as keyof Transaction,
       label: t.amount,
@@ -141,7 +164,7 @@ export default function TransactionsTable({
       sortable: true,
       render: (value: unknown) => (
         <Badge variant={getStatusVariant(value as string)}>
-          {value as string}
+          {String(value).charAt(0).toUpperCase() + String(value).slice(1)}
         </Badge>
       )
     },
@@ -151,26 +174,47 @@ export default function TransactionsTable({
       sortable: true,
       render: (value: unknown) => (
         <Badge variant={getTypeVariant(value as string)}>
-          {value as string}
+          {String(value).charAt(0).toUpperCase() + String(value).slice(1)}
         </Badge>
       )
     },
     {
-      key: 'note' as keyof Transaction,
-      label: t.note,
-      sortable: false,
+      key: 'message' as keyof Transaction,
+      label: t.message,
+      sortable: true,
       render: (value: unknown) => (
         <span className="text-gray-500 max-w-xs truncate block" title={value as string}>
           {value as string}
         </span>
       ),
       className: 'max-w-xs'
-    }
+    },
+    {
+      key: 'time' as keyof Transaction,
+      label: t.time,
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="text-gray-500 text-sm">
+          {formatDateTime(value as string)}
+        </span>
+      )
+    },
+    
   ];
+
+  // Transform the data to match DataTable expected format
+  const transformedApiData = {
+    data: apiData.data ? {
+      success: apiData.data.success,
+      result: apiData.data.result
+    } : null,
+    isLoading: apiData.isLoading,
+    error: apiData.error
+  };
 
   return (
     <DataTable
-      apiData={apiData}
+      apiData={transformedApiData}
       columns={columns}
       onRowClick={onRowClick}
       showPageSizeSelector={true}

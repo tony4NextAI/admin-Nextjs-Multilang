@@ -44,7 +44,7 @@ interface Column<T> {
   key: keyof T;
   label: string;
   sortable?: boolean;
-  render?: (value: unknown, row: T) => React.ReactNode;
+  render?: (value: unknown, row: T, index?: number) => React.ReactNode;
   className?: string;
 }
 
@@ -578,21 +578,28 @@ export function DataTable<T extends Record<string, unknown>>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {displayData.map((row, index) => (
-              <TableRow
-                key={row._id as string || row.id as string || index}
-                onClick={() => onRowClick?.(row)}
-                className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
-              >
-                {columns.map((column) => (
-                  <TableCell key={String(column.key)} className={column.className}>
-                    {column.render
-                      ? column.render(row[column.key], row)
-                      : String(row[column.key] || '')}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
+            {displayData.map((row, index) => {
+              // Calculate the actual row index accounting for pagination
+              const globalIndex = useServerPagination 
+                ? ((currentPage - 1) * currentPageSize) + index
+                : ((clientCurrentPage - 1) * clientPageSize) + index;
+                
+              return (
+                <TableRow
+                  key={row._id as string || row.id as string || index}
+                  onClick={() => onRowClick?.(row)}
+                  className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
+                >
+                  {columns.map((column) => (
+                    <TableCell key={String(column.key)} className={column.className}>
+                      {column.render
+                        ? column.render(row[column.key], row, globalIndex)
+                        : String(row[column.key] || '')}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
