@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { ApiPath, API_BASE_URL } from "@/lib/api";
+import { ApiPath } from "@/lib/api";
 
 const authOptions = {
   providers: [
@@ -19,7 +19,9 @@ const authOptions = {
           return null;
         }
         try {
-          const response = await fetch(`${API_BASE_URL}${ApiPath.adminLogin}`, {
+          // Use direct backend URL for server-side authentication
+          const backendUrl = process.env.BACKEND_API_URL || 'http://65.109.108.95:3001/api';
+          const response = await fetch(`${backendUrl}/${ApiPath.adminLogin}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userName: credentials.username, password: credentials.password }),
