@@ -12,9 +12,6 @@ const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials: any) {
-        console.log('====================================');
-        console.log({credentials});
-        console.log('====================================');
         if (!credentials?.username || !credentials?.password) {
           return null;
         }
