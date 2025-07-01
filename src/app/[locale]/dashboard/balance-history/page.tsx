@@ -29,8 +29,16 @@ export default function BalanceHistoryPage({ params }: BalanceHistoryPageProps) 
     params.then(({ locale }) => setLocale(locale));
   }, [params]);
 
-  const apiData = useBalanceHistory();
+  // Use the updated useBalanceHistory hook with pagination support
+  const { data, isLoading, error, changePage, changePageSize, queryParams } = useBalanceHistory();
   const t = getTranslations(locale);
+
+  // Create apiData object in the expected format for BalanceHistoryTable
+  const apiData = {
+    data,
+    isLoading,
+    error,
+  };
 
   const handleRowClick = (balanceEntry: { _id: string; amount: number; type: string; status: string }) => {
     console.log('Clicked balance entry:', balanceEntry);
@@ -39,12 +47,12 @@ export default function BalanceHistoryPage({ params }: BalanceHistoryPageProps) 
 
   const handlePageChange = (page: number) => {
     console.log('Page changed to:', page);
-    // In a real app, this would trigger an API call with new page
+    changePage(page); // Use the changePage function from the hook
   };
 
   const handlePageSizeChange = (pageSize: number) => {
     console.log('Page size changed to:', pageSize);
-    // In a real app, this would trigger an API call with new page size
+    changePageSize(pageSize); // Use the changePageSize function from the hook
   };
 
   return (
@@ -53,6 +61,14 @@ export default function BalanceHistoryPage({ params }: BalanceHistoryPageProps) 
         <FaHistory className="mr-3 h-6 w-6 text-indigo-600" />
         {t.title}
       </h1>
+      
+      {/* Display current pagination info */}
+      <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <p className="text-sm text-blue-800">
+          <strong>Current Pagination:</strong> Page {queryParams.page} | Limit {queryParams.limit} items per page
+        </p>
+      </div>
+
       <div className="bg-white shadow-sm rounded-lg">
         <BalanceHistoryTable 
           apiData={apiData}

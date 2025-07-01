@@ -41,10 +41,14 @@ export default function LivestreamPage({ params }: LivestreamPageProps) {
     params.then(({ locale }) => setLocale(locale));
   }, [params]);
 
+  // Use the updated useLiveStream hook with pagination support
   const { 
-    data: apiData, 
+    data, 
     isLoading, 
     error, 
+    changePage, 
+    changePageSize, 
+    queryParams,
     createLiveStream, 
     isCreating, 
     updateLiveStream,
@@ -52,6 +56,13 @@ export default function LivestreamPage({ params }: LivestreamPageProps) {
   } = useLiveStream();
 
   const t = getTranslations(locale);
+
+  // Create apiData object in the expected format for LiveStreamTable
+  const apiData = {
+    data,
+    isLoading,
+    error,
+  };
 
   const handleCreateLiveStream = (formData: {
     youtubeLink: string;
@@ -94,12 +105,12 @@ export default function LivestreamPage({ params }: LivestreamPageProps) {
 
   const handlePageChange = (page: number) => {
     console.log('Page changed to:', page);
-    // In a real app, this would trigger an API call with new page
+    changePage(page); // Use the changePage function from the hook
   };
 
   const handlePageSizeChange = (pageSize: number) => {
     console.log('Page size changed to:', pageSize);
-    // In a real app, this would trigger an API call with new page size
+    changePageSize(pageSize); // Use the changePageSize function from the hook
   };
 
   return (
@@ -120,9 +131,16 @@ export default function LivestreamPage({ params }: LivestreamPageProps) {
           </Button>
         </div>
         
+        {/* Display current pagination info */}
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800">
+            <strong>Current Pagination:</strong> Page {queryParams.page} | Limit {queryParams.limit} items per page
+          </p>
+        </div>
+        
         <div className="bg-white shadow-sm rounded-lg">
           <LiveStreamTable 
-            apiData={{ data: apiData, isLoading, error }}
+            apiData={apiData}
             locale={locale}
             onRowClick={handleRowClick}
             onPageChange={handlePageChange}

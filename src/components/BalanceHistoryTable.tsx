@@ -207,6 +207,8 @@ export default function BalanceHistoryTable({
       onRowClick={onRowClick}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
+      showPageSizeSelector={true}
+      pageSizeOptions={[1, 5, 10, 15, 20]}
     />
   );
 } 

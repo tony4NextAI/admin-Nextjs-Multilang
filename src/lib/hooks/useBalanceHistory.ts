@@ -1,15 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { ApiPath, apiAuthFetch } from "../api";
+import { useState } from "react";
+import { createDefaultPaginationOption, API_CONFIG } from "../config";
 
-export const defaultBalanceHistoryOption = {
-  page: 1,
-  limit: 10,
-  filterBy: "",
-  sortBy: {
-    createdAt: -1,
-  },
-};
+export const defaultBalanceHistoryOption = createDefaultPaginationOption({
+  createdAt: API_CONFIG.sorting.defaultCreatedAtSort,
+});
 
 // Define the API response type for balance history
 interface BalanceHistoryApiResponse {
@@ -41,29 +38,61 @@ interface BalanceHistoryApiResponse {
   };
 }
 
-const fetchBalanceHistory = async (_queryParams = defaultBalanceHistoryOption): Promise<BalanceHistoryApiResponse> => {
+interface BalanceHistoryQueryParams {
+  page?: number;
+  limit?: number;
+  filterBy?: string;
+  sortBy?: {
+    createdAt?: number;
+    [key: string]: number | string | undefined;
+  };
+}
+
+const fetchBalanceHistory = async (queryParams: BalanceHistoryQueryParams = defaultBalanceHistoryOption): Promise<BalanceHistoryApiResponse> => {
   const balanceHistory = await apiAuthFetch<BalanceHistoryApiResponse>(ApiPath.balanceHistory, {
     method: "POST",
     body: {
-      ..._queryParams,
+      ...defaultBalanceHistoryOption,
+      ...queryParams,
     },
   });
   return balanceHistory;
 };
 
-export const useBalanceHistory = () => {
+export const useBalanceHistory = (initialParams?: BalanceHistoryQueryParams) => {
   const { status } = useSession();
+  const [queryParams, setQueryParams] = useState<BalanceHistoryQueryParams>({
+    ...defaultBalanceHistoryOption,
+    ...initialParams,
+  });
   
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["balanceHistory"],
-    queryFn: () => fetchBalanceHistory(defaultBalanceHistoryOption),
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["balanceHistory", queryParams],
+    queryFn: () => fetchBalanceHistory(queryParams),
     // Only run the query if we have a valid session
     enabled: status === "authenticated",
   });
+
+  const updateParams = (newParams: Partial<BalanceHistoryQueryParams>) => {
+    setQueryParams(prev => ({ ...prev, ...newParams }));
+  };
+
+  const changePage = (page: number) => {
+    updateParams({ page });
+  };
+
+  const changePageSize = (limit: number) => {
+    updateParams({ limit, page: 1 }); // Reset to first page when changing page size
+  };
 
   return {
     data,
     isLoading,
     error,
+    refetch,
+    queryParams,
+    updateParams,
+    changePage,
+    changePageSize,
   };
 }; 

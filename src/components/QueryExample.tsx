@@ -97,11 +97,42 @@ const formatCurrency = (amount: number): string => {
 };
 
 export default function QueryExample() {
-  const usersData = useUsers();
-  const transactionsData = useTransactions();
-  const predictsData = usePredicts();
-  const balanceHistoryData = useBalanceHistory();
-  const liveStreamData = useLiveStream();
+  const { data: usersDataRaw, isLoading: usersLoading, error: usersError } = useUsers();
+  const { data: transactionsDataRaw, isLoading: transactionsLoading, error: transactionsError } = useTransactions();
+  const { data: predictsDataRaw, isLoading: predictsLoading, error: predictsError } = usePredicts();
+  const { data: balanceHistoryDataRaw, isLoading: balanceHistoryLoading, error: balanceHistoryError } = useBalanceHistory();
+  const { data: liveStreamDataRaw, isLoading: liveStreamLoading, error: liveStreamError } = useLiveStream();
+
+  // Create data objects to match the old format
+  const usersData = {
+    data: usersDataRaw,
+    isLoading: usersLoading,
+    error: usersError,
+  };
+
+  const transactionsData = {
+    data: transactionsDataRaw,
+    isLoading: transactionsLoading,
+    error: transactionsError,
+  };
+
+  const predictsData = {
+    data: predictsDataRaw,
+    isLoading: predictsLoading,
+    error: predictsError,
+  };
+
+  const balanceHistoryData = {
+    data: balanceHistoryDataRaw,
+    isLoading: balanceHistoryLoading,
+    error: balanceHistoryError,
+  };
+
+  const liveStreamData = {
+    data: liveStreamDataRaw,
+    isLoading: liveStreamLoading,
+    error: liveStreamError,
+  };
 
   // Transform all data to match DataTable expected format
   const transformedUsersData = {

@@ -28,14 +28,23 @@ function getTranslations(locale: string = 'en') {
   const translations = {
     en: {
       id: 'ID',
-      streamer: 'Người phát',
-      youtubeLink: 'Link YouTube',
-      duration: 'Thời lượng',
-      totalPlay: 'Tổng lượt chơi',
-      total: 'Tổng tiền',
-      result: 'Kết quả',
-      status: 'Trạng thái',
-      createdAt: 'Ngày tạo'
+      streamer: 'Streamer',
+      youtubeLink: 'YouTube Link',
+      duration: 'Duration',
+      totalPlay: 'Total Plays',
+      total: 'Total Amount',
+      result: 'Result',
+      status: 'Status',
+      createdAt: 'Created Date',
+      // Result status translations
+      pending: 'Pending',
+      lose: 'Lose',
+      win: 'Win',
+      // Status translations
+      inProgress: 'In Progress',
+      completed: 'Completed',
+      // Other text
+      plays: 'plays'
     },
     vi: {
       id: 'ID',
@@ -46,7 +55,16 @@ function getTranslations(locale: string = 'en') {
       total: 'Tổng tiền',
       result: 'Kết quả',
       status: 'Trạng thái',
-      createdAt: 'Ngày tạo'
+      createdAt: 'Ngày tạo',
+      // Result status translations
+      pending: 'Chưa xác định',
+      lose: 'Thua',
+      win: 'Thắng',
+      // Status translations
+      inProgress: 'Đang tiến hành',
+      completed: 'Hoàn thành',
+      // Other text
+      plays: 'lượt chơi'
     }
   };
   return translations[locale as keyof typeof translations] || translations.en;
@@ -208,7 +226,7 @@ export default function LiveStreamTable({
       sortable: true,
       render: (value: unknown) => (
         <Badge variant="info">
-          {(value as number).toLocaleString()} plays
+          {(value as number).toLocaleString()} {t.plays}
         </Badge>
       )
     },
@@ -232,19 +250,19 @@ export default function LiveStreamTable({
           case 0:
             return (
               <Badge variant="default">
-                Chưa xác định
+                {t.pending}
               </Badge>
             );
           case 1:
             return (
               <Badge variant="warning">
-                Thua
+                {t.lose}
               </Badge>
             );
           case 2:
             return (
               <Badge variant="success">
-                Thắng
+                {t.win}
               </Badge>
             );
           default:
@@ -262,8 +280,8 @@ export default function LiveStreamTable({
         // Define progress based on status
         const getProgress = (status: string) => {
           switch (status) {
-            case 'progress': return { percent: 75, color: 'bg-blue-500', text: 'Đang tiến hành', animated: true };
-            case 'completed': return { percent: 100, color: 'bg-green-500', text: 'Hoàn thành', animated: false };
+            case 'progress': return { percent: 75, color: 'bg-blue-500', text: t.inProgress, animated: true };
+            case 'completed': return { percent: 100, color: 'bg-green-500', text: t.completed, animated: false };
             default: return { percent: 0, color: 'bg-gray-500', text: status, animated: true };
           }
         };
@@ -319,6 +337,8 @@ export default function LiveStreamTable({
         onRowClick={handleRowClick}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
+        showPageSizeSelector={true}
+        pageSizeOptions={[1, 5, 10, 15, 20]}
       />
       <LiveStreamDetailsModal
         isOpen={isModalOpen}

@@ -219,7 +219,7 @@ export default function TransactionsTable({
       columns={columns}
       onRowClick={onRowClick}
       showPageSizeSelector={true}
-      pageSizeOptions={[5, 10, 15, 20]}
+      pageSizeOptions={[1, 2, 5, 10, 15, 20]}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       className="shadow-sm"

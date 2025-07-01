@@ -11,6 +11,25 @@ interface User extends Record<string, unknown> {
   __v?: number;
 }
 
+// Simple translation function
+function getTranslations(locale: string = 'en') {
+  const translations = {
+    en: {
+      id: 'ID',
+      account: 'Account',
+      bank: 'Bank',
+      amount: 'Amount'
+    },
+    vi: {
+      id: 'ID',
+      account: 'Tài khoản',
+      bank: 'Ngân hàng',
+      amount: 'Số tiền'
+    }
+  };
+  return translations[locale as keyof typeof translations] || translations.en;
+}
+
 // Format currency in Vietnamese dong
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('vi-VN', {
@@ -44,6 +63,7 @@ interface UsersTableProps {
     isLoading: boolean;
     error: Error | null;
   };
+  locale?: string;
   onRowClick?: (user: User) => void;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
@@ -51,14 +71,17 @@ interface UsersTableProps {
 
 export default function UsersTable({ 
   apiData, 
+  locale = 'en',
   onRowClick, 
   onPageChange, 
   onPageSizeChange 
 }: Readonly<UsersTableProps>) {
+  const t = getTranslations(locale);
+
   const columns: Column<User>[] = [
     {
       key: '_id' as keyof User,
-      label: 'ID',
+      label: t.id,
       sortable: false,
       render: (_value: unknown, _item: User, index: number, currentPage: number, pageSize: number) => (
         <span className="font-medium text-gray-900">
@@ -68,7 +91,7 @@ export default function UsersTable({
     },
     {
       key: 'account' as keyof User,
-      label: 'Account',
+      label: t.account,
       sortable: true,
       render: (value: unknown) => (
         <span className="font-medium text-gray-900">{value as string}</span>
@@ -76,7 +99,7 @@ export default function UsersTable({
     },
     {
       key: 'bank' as keyof User,
-      label: 'Bank',
+      label: t.bank,
       sortable: true,
       render: (value: unknown) => (
         <Badge variant="info">{value as string}</Badge>
@@ -84,7 +107,7 @@ export default function UsersTable({
     },
     {
       key: 'amount' as keyof User,
-      label: 'Amount',
+      label: t.amount,
       sortable: true,
       render: (value: unknown) => (
         <span className="font-medium text-green-600">
@@ -112,7 +135,7 @@ export default function UsersTable({
       apiData={transformedApiData}
       showPageSizeSelector={true}
       enableClientSidePagination={true}
-      pageSizeOptions={[5, 10, 20, 50]}
+      pageSizeOptions={[1, 5, 10, 20, 50]}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       className="shadow-sm"

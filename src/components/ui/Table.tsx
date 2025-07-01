@@ -604,18 +604,16 @@ export function DataTable<T extends Record<string, unknown>>({
         </Table>
       </div>
       
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          itemsPerPage={currentPageSize}
-          totalItems={totalItems}
-          onPageSizeChange={showPageSizeSelector ? handlePageSizeChange : undefined}
-          showPageSizeSelector={showPageSizeSelector}
-          pageSizeOptions={pageSizeOptions}
-        />
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        itemsPerPage={currentPageSize}
+        totalItems={totalItems}
+        onPageSizeChange={showPageSizeSelector ? handlePageSizeChange : undefined}
+        showPageSizeSelector={showPageSizeSelector}
+        pageSizeOptions={pageSizeOptions}
+      />
     </div>
   );
 }
