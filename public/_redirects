@@ -1,0 +1,15 @@
+# Redirect root to default locale
+/   /en   302
+
+# Handle locale routing
+/en/*   /en/:splat   200
+/vi/*   /vi/:splat   200
+
+# API routes
+/api/*  /.netlify/functions/api/:splat  200
+
+# Handle auth routes specifically
+/api/auth/*  /.netlify/functions/api/auth/:splat  200
+
+# Fallback for SPA routing
+/*   /en/404   404 
