@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = ".next"
+  publish = "out"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -28,13 +28,7 @@
   to = "/vi/:splat"
   status = 200
 
-# Handle Next.js API routes
-[[redirects]]
-  from = "/api/*"
-  to = "/api/:splat"
-  status = 200
-
-# Handle NextAuth API routes specifically
+# Handle Next.js static assets
 [[redirects]]
   from = "/_next/*"
   to = "/_next/:splat"

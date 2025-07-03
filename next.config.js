@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Configure for Netlify deployment
+  output: 'export',
   trailingSlash: false,
   
   images: {
@@ -18,11 +19,8 @@ const nextConfig = {
       },
     ],
     // Add unoptimized for better Netlify compatibility
-    unoptimized: process.env.NODE_ENV === 'production',
+    unoptimized: true,
   },
-  
-  // Ensure proper asset prefix for Netlify
-  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
   
   // Add any other Next.js config here
 };
