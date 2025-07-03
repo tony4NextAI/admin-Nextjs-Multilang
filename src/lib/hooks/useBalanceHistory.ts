@@ -1,12 +1,34 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { ApiPath, apiAuthFetch } from "../api";
-import { useState } from "react";
-import { createDefaultPaginationOption, API_CONFIG } from "../config";
 
-export const defaultBalanceHistoryOption = createDefaultPaginationOption({
-  createdAt: API_CONFIG.sorting.defaultCreatedAtSort,
-});
+// Define filter options for balance history
+export interface BalanceHistoryFilterOptions {
+  page?: number;
+  limit?: number;
+  filterBy?: {
+    userId?: string;
+    status?: "success" | "failed" | "unknow" | "pending";
+    type?: "win" | "play";
+    [key: string]: string | number | boolean | undefined;
+  };
+  sortBy?: {
+    amount?: -1 | 1;
+    createdAt?: -1 | 1;
+    status?: -1 | 1;
+    type?: -1 | 1;
+    userId?: -1 | 1;
+  };
+}
+
+export const defaultBalanceHistoryOption: BalanceHistoryFilterOptions = {
+  page: 1,
+  limit: 10,
+  filterBy: {},
+  sortBy: {
+    createdAt: -1,
+  },
+};
 
 // Define the API response type for balance history
 interface BalanceHistoryApiResponse {
@@ -20,8 +42,8 @@ interface BalanceHistoryApiResponse {
         bank: string;
       };
       amount: number;
-      status: string;
-      type: string;
+      status: "success" | "failed" | "unknow" | "pending";
+      type: "win" | "play";
       createdAt: string;
       updatedAt: string;
       __v?: number;
@@ -38,33 +60,41 @@ interface BalanceHistoryApiResponse {
   };
 }
 
-interface BalanceHistoryQueryParams {
-  page?: number;
-  limit?: number;
-  filterBy?: string;
-  sortBy?: {
-    createdAt?: number;
-    [key: string]: number | string | undefined;
-  };
-}
-
-const fetchBalanceHistory = async (queryParams: BalanceHistoryQueryParams = defaultBalanceHistoryOption): Promise<BalanceHistoryApiResponse> => {
+const fetchBalanceHistory = async (_queryParams: BalanceHistoryFilterOptions = defaultBalanceHistoryOption): Promise<BalanceHistoryApiResponse> => {
   const balanceHistory = await apiAuthFetch<BalanceHistoryApiResponse>(ApiPath.balanceHistory, {
     method: "POST",
     body: {
-      ...defaultBalanceHistoryOption,
-      ...queryParams,
+      ..._queryParams,
     },
   });
   return balanceHistory;
 };
 
-export const useBalanceHistory = (initialParams?: BalanceHistoryQueryParams) => {
+/**
+ * Hook for fetching balance history with filtering capabilities
+ * 
+ * @example
+ * // Basic usage
+ * const { data, isLoading, error } = useBalanceHistory();
+ * 
+ * @example
+ * // With filters
+ * const { data, isLoading, error } = useBalanceHistory({
+ *   filterBy: {
+ *     status: "success",
+ *     type: "win",
+ *     userId: "60f7b3b3b3b3b3b3b3b3b3b3"
+ *   },
+ *   sortBy: { amount: -1 }
+ * });
+ */
+export const useBalanceHistory = (options: BalanceHistoryFilterOptions = defaultBalanceHistoryOption) => {
   const { status } = useSession();
-  const [queryParams, setQueryParams] = useState<BalanceHistoryQueryParams>({
+  
+  const queryParams = {
     ...defaultBalanceHistoryOption,
-    ...initialParams,
-  });
+    ...options,
+  };
   
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["balanceHistory", queryParams],
@@ -73,26 +103,10 @@ export const useBalanceHistory = (initialParams?: BalanceHistoryQueryParams) => 
     enabled: status === "authenticated",
   });
 
-  const updateParams = (newParams: Partial<BalanceHistoryQueryParams>) => {
-    setQueryParams(prev => ({ ...prev, ...newParams }));
-  };
-
-  const changePage = (page: number) => {
-    updateParams({ page });
-  };
-
-  const changePageSize = (limit: number) => {
-    updateParams({ limit, page: 1 }); // Reset to first page when changing page size
-  };
-
   return {
     data,
     isLoading,
     error,
     refetch,
-    queryParams,
-    updateParams,
-    changePage,
-    changePageSize,
   };
 }; 

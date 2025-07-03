@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface AvatarProps {
   src?: string;
@@ -46,7 +47,7 @@ export const Avatar: React.FC<AvatarProps> = ({
       className
     )}>
       {src && !imageError && (
-        <img
+        <Image
           src={src}
           alt={alt}
           className={cn(
@@ -55,6 +56,8 @@ export const Avatar: React.FC<AvatarProps> = ({
           )}
           onError={handleImageError}
           onLoad={handleImageLoad}
+          width={100}
+          height={100}
         />
       )}
       

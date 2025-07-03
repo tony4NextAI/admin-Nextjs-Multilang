@@ -44,6 +44,7 @@ interface Column<T> {
   key: keyof T;
   label: string;
   sortable?: boolean;
+  onSort?: () => void;
   render?: (value: unknown, row: T, index: number, currentPage: number, pageSize: number) => React.ReactNode;
   className?: string;
 }
@@ -426,25 +427,46 @@ export function DataTable<T extends Record<string, unknown>>({
 
   // Extract table data from API response
   const tableData = useMemo(() => {
-    return apiData.data?.success ? (apiData.data.result?.data || []) : [];
+    const data = apiData.data?.success ? (apiData.data.result?.data || []) : [];
+    console.log('Table data:', data);
+    return data;
   }, [apiData.data]);
 
   // Client-side sorting logic
   const sortedData = useMemo(() => {
-    if (!sortConfig.key) return tableData;
+    console.log('Sort config:', sortConfig);
+    if (!sortConfig.key) {
+      console.log('No sort key, returning original data');
+      return tableData;
+    }
 
-    return [...tableData].sort((a, b) => {
-      const aValue = a[sortConfig.key!];
-      const bValue = b[sortConfig.key!];
+    const sorted = [...tableData].sort((a, b) => {
+      let aValue: unknown = a[sortConfig.key!];
+      let bValue: unknown = b[sortConfig.key!];
 
-      if (aValue < bValue) {
+      // Handle nested objects like userId.account
+      if (sortConfig.key === 'userId' && typeof aValue === 'object' && aValue !== null) {
+        aValue = (aValue as { account: string }).account;
+        bValue = (bValue as { account: string }).account;
+      }
+
+      console.log(`Comparing ${aValue} vs ${bValue} for key ${String(sortConfig.key)}`);
+
+      // Ensure values are comparable
+      const compareA = aValue ?? '';
+      const compareB = bValue ?? '';
+
+      if (compareA < compareB) {
         return sortConfig.direction === 'asc' ? -1 : 1;
       }
-      if (aValue > bValue) {
+      if (compareA > compareB) {
         return sortConfig.direction === 'asc' ? 1 : -1;
       }
       return 0;
     });
+    
+    console.log('Sorted data:', sorted);
+    return sorted;
   }, [tableData, sortConfig]);
 
   // Handle loading state
@@ -514,6 +536,12 @@ export function DataTable<T extends Record<string, unknown>>({
   const useServerPagination = !enableClientSidePagination && 
     responseData.totalPages !== undefined && 
     responseData.page !== undefined;
+    
+  console.log('Server pagination check:', {
+    enableClientSidePagination,
+    hasServerPagination: responseData.totalPages !== undefined && responseData.page !== undefined,
+    useServerPagination
+  });
 
   let displayData = tableData;
   let currentPage = useServerPagination ? (responseData.page || 1) : clientCurrentPage;
@@ -530,13 +558,27 @@ export function DataTable<T extends Record<string, unknown>>({
     totalItems = sortedData.length;
     currentPage = clientCurrentPage;
     currentPageSize = clientPageSize;
+    console.log('Using client-side pagination and sorting:', {
+      startIndex,
+      clientPageSize,
+      sortedDataLength: sortedData.length,
+      displayDataLength: displayData.length
+    });
+  } else {
+    console.log('Using server-side pagination, no sorting applied');
   }
 
   const handleSort = (key: keyof T) => {
-    setSortConfig(prev => ({
-      key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
-    }));
+    console.log('Sorting by:', key);
+    setSortConfig(prev => {
+      const direction: 'asc' | 'desc' = prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc';
+      const newConfig = {
+        key,
+        direction
+      };
+      console.log('New sort config:', newConfig);
+      return newConfig;
+    });
   };
 
   const handlePageChange = (page: number) => {
@@ -566,7 +608,18 @@ export function DataTable<T extends Record<string, unknown>>({
                 <TableHead
                   key={String(column.key)}
                   sortable={column.sortable}
-                  onSort={() => column.sortable && handleSort(column.key)}
+                  onSort={() => {
+                    console.log('Column clicked:', column.key, 'sortable:', column.sortable);
+                    if (column.sortable) {
+                      if (column.onSort) {
+                        console.log('Using custom onSort');
+                        column.onSort();
+                      } else {
+                        console.log('Using default handleSort');
+                        handleSort(column.key);
+                      }
+                    }
+                  }}
                   sortDirection={
                     sortConfig.key === column.key ? sortConfig.direction : null
                   }
@@ -604,16 +657,18 @@ export function DataTable<T extends Record<string, unknown>>({
         </Table>
       </div>
       
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        itemsPerPage={currentPageSize}
-        totalItems={totalItems}
-        onPageSizeChange={showPageSizeSelector ? handlePageSizeChange : undefined}
-        showPageSizeSelector={showPageSizeSelector}
-        pageSizeOptions={pageSizeOptions}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={currentPageSize}
+          totalItems={totalItems}
+          onPageSizeChange={showPageSizeSelector ? handlePageSizeChange : undefined}
+          showPageSizeSelector={showPageSizeSelector}
+          pageSizeOptions={pageSizeOptions}
+        />
+      )}
     </div>
   );
 }

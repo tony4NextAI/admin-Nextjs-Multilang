@@ -77,7 +77,6 @@ export default function UsersTable({
   onPageSizeChange 
 }: Readonly<UsersTableProps>) {
   const t = getTranslations(locale);
-
   const columns: Column<User>[] = [
     {
       key: '_id' as keyof User,
@@ -129,13 +128,13 @@ export default function UsersTable({
 
 
   return (
-    <DataTable
+    <DataTable<User>
       columns={columns}
       onRowClick={onRowClick}
       apiData={transformedApiData}
       showPageSizeSelector={true}
       enableClientSidePagination={true}
-      pageSizeOptions={[1, 5, 10, 20, 50]}
+      pageSizeOptions={[5, 10, 20, 50]}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       className="shadow-sm"

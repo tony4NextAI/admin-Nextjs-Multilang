@@ -13,8 +13,8 @@ export interface BalanceHistory extends Record<string, unknown> {
     bank: string;
   };
   amount: number;
-  status: string;
-  type: string;
+  status: "success" | "failed" | "unknow" | "pending";
+  type: "win" | "play";
   createdAt: string;
   updatedAt: string;
   __v?: number;
@@ -147,12 +147,10 @@ export default function BalanceHistoryTable({
         return (
           <Badge variant={
             type === 'win' ? 'success' : 
-            type === 'lose' ? 'danger' : 
-            type === 'deposit' ? 'info' :
-            type === 'withdraw' ? 'warning' :
+            type === 'play' ? 'warning' : 
             'secondary'
           }>
-            {type }
+            {type}
           </Badge>
         );
       }
@@ -207,8 +205,10 @@ export default function BalanceHistoryTable({
       onRowClick={onRowClick}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
+      enableClientSidePagination={true}
       showPageSizeSelector={true}
-      pageSizeOptions={[1, 5, 10, 15, 20]}
+      pageSizeOptions={[5, 10, 15, 20]}
+      className="shadow-sm"
     />
   );
 } 

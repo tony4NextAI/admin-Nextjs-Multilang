@@ -18,6 +18,7 @@ export interface Predict extends Record<string, unknown> {
   streamId: number;
   isWin: boolean;
   isPaid: boolean;
+  status: "pending" | "completed";
   createdAt: string;
   updatedAt: string;
   id: number;
@@ -37,6 +38,7 @@ function getTranslations(locale: string = 'en') {
       streamId: 'Stream',
       isWin: 'Result',
       isPaid: 'Paid',
+      status: 'Status',
       createdAt: 'Created At'
     },
     vi: {
@@ -49,6 +51,7 @@ function getTranslations(locale: string = 'en') {
       streamId: 'Luồng',
       isWin: 'Kết quả',
       isPaid: 'Đã trả',
+      status: 'Trạng thái',
       createdAt: 'Ngày tạo'
     }
   };
@@ -189,6 +192,16 @@ export default function PredictsTable({
       )
     },
     {
+      key: 'status' as keyof Predict,
+      label: t.status,
+      sortable: true,
+      render: (value: unknown) => (
+        <Badge variant={value === 'completed' ? 'success' : 'warning'}>
+          {value === 'completed' ? 'Hoàn thành' : 'Đang chờ'}
+        </Badge>
+      )
+    },
+    {
       key: 'message' as keyof Predict,
       label: t.message,
       sortable: true,
@@ -228,8 +241,7 @@ export default function PredictsTable({
       onRowClick={onRowClick}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
-      showPageSizeSelector={true}
-      pageSizeOptions={[1, 5, 10, 15, 20]}
+      enableClientSidePagination={true}
     />
   );
 } 

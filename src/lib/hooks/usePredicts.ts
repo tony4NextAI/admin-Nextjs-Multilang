@@ -1,15 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { ApiPath, apiAuthFetch } from "../api";
-import { useState } from "react";
-import { createDefaultPaginationOption, API_CONFIG } from "../config";
 
-export const defaultPredictsOption = createDefaultPaginationOption({
-  createdAt: API_CONFIG.sorting.defaultCreatedAtSort,
-});
+// Define filter options based on your requirements
+export interface PredictFilterOptions {
+  page?: number;
+  limit?: number;
+  filterBy?: {
+    userId?: string;
+    streamId?: number;
+    isWin?: boolean;
+    isPaid?: boolean;
+    status?: "pending" | "completed";
+    [key: string]: string | number | boolean | undefined;
+  };
+  sortBy?: {
+    amount?: -1 | 1;
+    createdAt?: -1 | 1;
+    userId?: -1 | 1;
+    streamId?: -1 | 1;
+    isWin?: -1 | 1;
+    isPaid?: -1 | 1;
+    status?: -1 | 1;
+  };
+}
+
+export const defaultPredictOption: PredictFilterOptions = {
+  page: 1,
+  limit: 10,
+  filterBy: {},
+  sortBy: {
+    amount: -1,
+  },
+};
 
 // Define the API response type for predicts
-interface PredictsApiResponse {
+interface PredictApiResponse {
   success: boolean;
   result?: {
     data?: Array<{
@@ -25,6 +51,7 @@ interface PredictsApiResponse {
       streamId: number;
       isWin: boolean;
       isPaid: boolean;
+      status: "pending" | "completed";
       createdAt: string;
       updatedAt: string;
       id: number;
@@ -42,33 +69,54 @@ interface PredictsApiResponse {
   };
 }
 
-interface PredictsQueryParams {
-  page?: number;
-  limit?: number;
-  filterBy?: string;
-  sortBy?: {
-    createdAt?: number;
-    [key: string]: number | string | undefined;
-  };
-}
-
-const fetchPredicts = async (queryParams: PredictsQueryParams = defaultPredictsOption): Promise<PredictsApiResponse> => {
-  const predicts = await apiAuthFetch<PredictsApiResponse>(ApiPath.predicts, {
+const fetchPredicts = async (_queryParams: PredictFilterOptions = defaultPredictOption): Promise<PredictApiResponse> => {
+  const predicts = await apiAuthFetch<PredictApiResponse>(ApiPath.predicts, {
     method: "POST",
     body: {
-      ...defaultPredictsOption,
-      ...queryParams,
+      ..._queryParams,
     },
   });
   return predicts;
 };
 
-export const usePredicts = (initialParams?: PredictsQueryParams) => {
+/**
+ * Hook for fetching predicts with filtering capabilities
+ * 
+ * @example
+ * // Basic usage
+ * const { data, isLoading, error } = usePredicts();
+ * 
+ * @example
+ * // With filters as object
+ * const { data, isLoading, error } = usePredicts({
+ *   page: 1,
+ *   limit: 10,
+ *   filterBy: {
+ *     status: "pending",
+ *     isWin: true,
+ *     isPaid: false
+ *   },
+ *   sortBy: { amount: -1 }
+ * });
+ * 
+ * @example
+ * // Filter by specific user or stream
+ * const { data, isLoading, error } = usePredicts({
+ *   filterBy: {
+ *     userId: "60f7b3b3b3b3b3b3b3b3b3b3",
+ *     streamId: 123
+ *   },
+ *   sortBy: { createdAt: -1 }
+ * });
+ */
+
+export const usePredicts = (options: PredictFilterOptions = defaultPredictOption) => {
   const { status } = useSession();
-  const [queryParams, setQueryParams] = useState<PredictsQueryParams>({
-    ...defaultPredictsOption,
-    ...initialParams,
-  });
+  
+  const queryParams = {
+    ...defaultPredictOption,
+    ...options,
+  };
   
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["predicts", queryParams],
@@ -77,26 +125,10 @@ export const usePredicts = (initialParams?: PredictsQueryParams) => {
     enabled: status === "authenticated",
   });
 
-  const updateParams = (newParams: Partial<PredictsQueryParams>) => {
-    setQueryParams(prev => ({ ...prev, ...newParams }));
-  };
-
-  const changePage = (page: number) => {
-    updateParams({ page });
-  };
-
-  const changePageSize = (limit: number) => {
-    updateParams({ limit, page: 1 }); // Reset to first page when changing page size
-  };
-
   return {
     data,
     isLoading,
     error,
     refetch,
-    queryParams,
-    updateParams,
-    changePage,
-    changePageSize,
   };
 }; 

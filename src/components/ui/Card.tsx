@@ -5,6 +5,7 @@ interface CardProps {
   children: React.ReactNode;
   className?: string;
   variant?: 'default' | 'elevated' | 'outlined';
+  allowOverflow?: boolean;
 }
 
 interface CardHeaderProps {
@@ -31,11 +32,13 @@ const cardVariants = {
 export const Card: React.FC<CardProps> = ({ 
   children, 
   className = '', 
-  variant = 'default' 
+  variant = 'default',
+  allowOverflow = false
 }) => {
   return (
     <div className={cn(
-      'rounded-xl overflow-hidden',
+      'rounded-xl',
+      allowOverflow ? 'overflow-visible' : 'overflow-hidden',
       cardVariants[variant],
       className
     )}>

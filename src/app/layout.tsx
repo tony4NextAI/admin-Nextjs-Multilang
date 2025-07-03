@@ -7,9 +7,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Admin Dashboard",
   description: "Admin Dashboard with Next.js 15",
-  // other: {
-  //   'Content-Security-Policy': 'upgrade-insecure-requests',
-  // },
 };
 
 export default function RootLayout({
@@ -19,9 +16,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {/* <head>
-        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-      </head> */}
       <body className={inter.className}>
         <Providers>
           {children}

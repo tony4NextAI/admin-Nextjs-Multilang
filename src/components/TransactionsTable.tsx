@@ -8,9 +8,9 @@ import { Badge } from './ui/Badge';
 interface Transaction extends Record<string, unknown> {
   _id: string;
   amount: number;
-  status: string;
+  status: "success" | "failed" | "unknow" | "pending";
   message: string;
-  type: string;
+  type: "deposit" | "withdraw";
   time: string;
   createdAt: string;
   updatedAt: string;
@@ -121,6 +121,7 @@ export default function TransactionsTable({
     switch (type.toLowerCase()) {
       case 'deposit':
         return 'success';
+      case 'withdraw':
       case 'withdrawal':
         return 'warning';
       case 'transfer':
@@ -219,10 +220,11 @@ export default function TransactionsTable({
       columns={columns}
       onRowClick={onRowClick}
       showPageSizeSelector={true}
-      pageSizeOptions={[1, 2, 5, 10, 15, 20]}
+      pageSizeOptions={[5, 10, 15, 20]}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       className="shadow-sm"
+      enableClientSidePagination={true}
     />
   );
 } 
