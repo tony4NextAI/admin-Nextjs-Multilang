@@ -1,6 +1,14 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+// Generate static params for supported locales
+export async function generateStaticParams() {
+  return [
+    { locale: 'en' },
+    { locale: 'vi' }
+  ];
+}
+
 export default function NotFound() {
   const t = useTranslations('NotFound');
 

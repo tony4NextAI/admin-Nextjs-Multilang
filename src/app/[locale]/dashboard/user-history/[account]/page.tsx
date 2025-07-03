@@ -119,4 +119,18 @@ export default function UserHistoryPage({ params }: UserHistoryPageProps) {
       </div>
     </div>
   );
+}
+
+// Generate static params for supported locales and common account examples
+export async function generateStaticParams() {
+  const locales = ['en', 'vi'];
+  const accounts = ['user1', 'user2', 'admin']; // Add common account examples
+  
+  const params = [];
+  for (const locale of locales) {
+    for (const account of accounts) {
+      params.push({ locale, account });
+    }
+  }
+  return params;
 } 

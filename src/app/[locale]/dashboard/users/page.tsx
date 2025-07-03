@@ -65,4 +65,12 @@ export default function UsersPage({ params }: UsersPageProps) {
       </div>
     </div>
   );
+}
+
+// Generate static params for supported locales
+export async function generateStaticParams() {
+  return [
+    { locale: 'en' },
+    { locale: 'vi' }
+  ];
 } 

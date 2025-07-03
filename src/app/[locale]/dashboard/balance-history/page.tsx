@@ -182,4 +182,12 @@ export default function BalanceHistoryPage({ params }: BalanceHistoryPageProps) 
       </div>
     </div>
   );
+}
+
+// Generate static params for supported locales
+export async function generateStaticParams() {
+  return [
+    { locale: 'en' },
+    { locale: 'vi' }
+  ];
 } 

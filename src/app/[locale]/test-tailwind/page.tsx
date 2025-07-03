@@ -1,3 +1,11 @@
+// Generate static params for supported locales
+export async function generateStaticParams() {
+  return [
+    { locale: 'en' },
+    { locale: 'vi' }
+  ];
+}
+
 export default function TailwindTest() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">

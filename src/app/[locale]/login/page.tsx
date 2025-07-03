@@ -9,6 +9,14 @@ function getTitle(locale: string) {
   return translations[locale as keyof typeof translations] || translations.en;
 }
 
+// Generate static params for supported locales
+export async function generateStaticParams() {
+  return [
+    { locale: 'en' },
+    { locale: 'vi' }
+  ];
+}
+
 export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const title = getTitle(locale);

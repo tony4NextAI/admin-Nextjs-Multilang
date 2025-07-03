@@ -8,6 +8,14 @@ import { Button } from '@/components/ui/Button';
 import { FaVideo, FaPlus } from 'react-icons/fa';
 // import QueryExample from '@/components/QueryExample';
 
+// Generate static params for supported locales
+export async function generateStaticParams() {
+  return [
+    { locale: 'en' },
+    { locale: 'vi' }
+  ];
+}
+
 // Simple translation function
 function getTranslations(locale: string = 'en') {
   const translations = {
